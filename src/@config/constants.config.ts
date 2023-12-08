@@ -8,4 +8,13 @@ export const DATABASE = {
   database: process.env.DB_NAME!,
 };
 
+export const PORT: number = parseInt(process.env.PORT!);
+
 export const JWT_SECRET = process.env.JWT_SECRET!;
+
+export const SMTP_INFO = {
+  user: process.env.SMTP_USER!,
+  host: process.env.SMTP_HOST!,
+  port: parseInt(process.env.SMTP_PORT!),
+  password: process.env.SMTP_PASSWORD!,
+};

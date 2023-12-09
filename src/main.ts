@@ -19,7 +19,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('sewaXpress')
-    .setDescription('Darta Sifaris API specification')
+    .setDescription('sewaXpress API specification')
     .setVersion('1.0.0')
     .addBearerAuth(
       {
@@ -34,7 +34,7 @@ async function bootstrap() {
     )
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(PORT);
 }

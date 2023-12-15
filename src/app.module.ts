@@ -8,7 +8,6 @@ import { AuthModule } from './auth/auth.module';
 import { OtpModule } from './otp/otp.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './@interceptors/transform.interceptor';
-import { ServiceModule } from './service/service.module';
 import { ServicelistModule } from './servicelist/servicelist.module';
 
 @Module({
@@ -19,7 +18,6 @@ import { ServicelistModule } from './servicelist/servicelist.module';
     UsersModule,
     AuthModule,
     OtpModule,
-    ServiceModule,
     ServicelistModule,
   ],
   controllers: [AppController],

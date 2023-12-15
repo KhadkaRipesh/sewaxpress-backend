@@ -42,11 +42,11 @@ export class CreateCustomerDTO {
 
   @ApiProperty({
     type: 'enum',
-    enum: [UserRole.customer, UserRole.service_provider, UserRole.admin],
-    example: UserRole.customer,
+    enum: [UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    example: UserRole.CUSTOMER,
   })
-  @IsEnum([UserRole.customer, UserRole.service_provider])
-  @IsIn([UserRole.customer, UserRole.service_provider])
+  @IsEnum([UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER])
+  @IsIn([UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER])
   role: UserRole;
 
   @ApiProperty({ minLength: 8, example: 'Secret@123' })

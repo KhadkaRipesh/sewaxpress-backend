@@ -10,9 +10,9 @@ import {
 } from 'typeorm';
 
 export enum UserRole {
-  admin = 'ADMIN',
-  service_provider = 'SERVICE_PROVIDER',
-  customer = 'CUSTOMER',
+  ADMIN = 'ADMIN',
+  SERVICE_PROVIDER = 'SERVICE_PROVIDER',
+  CUSTOMER = 'CUSTOMER',
 }
 
 export interface IAddress {
@@ -25,7 +25,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.customer })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.CUSTOMER })
   role: UserRole;
 
   @Column({ nullable: true })

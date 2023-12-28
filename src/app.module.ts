@@ -9,6 +9,9 @@ import { OtpModule } from './otp/otp.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './@interceptors/transform.interceptor';
 import { ServicelistModule } from './servicelist/servicelist.module';
+import { ServiceModule } from './category/service/service.module';
+import { ServiceCategoryModule } from './service-category/service-category.module';
+import { ServiceCategoryModule } from './service-category/service-category.module';
 
 @Module({
   imports: [
@@ -19,6 +22,8 @@ import { ServicelistModule } from './servicelist/servicelist.module';
     AuthModule,
     OtpModule,
     ServicelistModule,
+    ServiceModule,
+    ServiceCategoryModule,
   ],
   controllers: [AppController],
   providers: [

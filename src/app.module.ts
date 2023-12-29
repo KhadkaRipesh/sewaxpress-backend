@@ -11,6 +11,7 @@ import { TransformInterceptor } from './@interceptors/transform.interceptor';
 import { ServicelistModule } from './servicelist/servicelist.module';
 import { ServiceModule } from './category/service/service.module';
 import { ServiceCategoryModule } from './service-category/service-category.module';
+import { CartModule } from './cart/cart.module';
 import { ServiceCategoryModule } from './service-category/service-category.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { ServiceCategoryModule } from './service-category/service-category.modul
     ServicelistModule,
     ServiceModule,
     ServiceCategoryModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [

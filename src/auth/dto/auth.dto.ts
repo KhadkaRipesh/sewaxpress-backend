@@ -47,6 +47,7 @@ export class CreateCustomerDTO {
   })
   @IsEnum([UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER])
   @IsIn([UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER])
+  @IsOptional()
   role: UserRole;
 
   @ApiProperty({ minLength: 8, example: 'Secret@123' })

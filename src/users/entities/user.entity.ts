@@ -47,7 +47,7 @@ export class User {
   })
   address: IAddress;
 
-  @Column({ select: false })
+  @Column({ select: false, nullable: true })
   password: string;
 
   @Column({ nullable: true })

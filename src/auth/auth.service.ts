@@ -1,16 +1,14 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as argon from 'argon2';
 import {
   CreateCustomerDTO,
-  EmailVerificationDTO,
   LoginUserDTO,
-  ResendEmailVerificationCodeDTO,
+  PasswordCreationDTO,
   ResetPasswordDto,
   ResetPasswordRequestDTO,
 } from './dto/auth.dto';
@@ -32,7 +30,7 @@ export class AuthService {
   // XXXXXXXXXXXXXXXXXX-------REGISTER USER-------XXXXXXXXXXXXXXXXXX
 
   async createUser(payload: CreateCustomerDTO) {
-    const { email, password, role, ...extra } = payload;
+    const { email, role, ...extra } = payload;
     const emailExist = await this.dataSource
       .getRepository(User)
       .findOne({ where: { email } });
@@ -44,7 +42,6 @@ export class AuthService {
       .getRepository(User)
       .save({
         email,
-        password: await argon.hash(password),
         role,
         ...extra,
       });
@@ -53,13 +50,14 @@ export class AuthService {
       savedUser.id,
       OTPType.emailVerification,
     );
+    const linkToCreatePassword = `http://localhost:8848/${savedUser.id}/set-password/${otp.code}`;
     sendMail({
       to: email,
-      subject: 'Email Verification',
+      subject: 'Welcome To SewaXpress',
       html: defaultMailTemplate({
-        title: 'Email Verification',
+        title: 'Create Your Password',
         name: savedUser.full_name,
-        message: `Your OTP is ${otp.code}`,
+        message: `Click the below link to create password : \n ${linkToCreatePassword}`,
       }),
     });
     return {
@@ -105,74 +103,34 @@ export class AuthService {
     };
   }
 
-  // XXXXXXXXXXXXXXXXXX-------Email Verification-------XXXXXXXXXXXXXXXXXX
-  async emailVerification(payload: EmailVerificationDTO) {
+  // XXXXXXXXXXXXXXXXXX-------SET PASSWORD-------XXXXXXXXXXXXXXXXXX
+  async setPassword(userId: string, payload: PasswordCreationDTO, otp: string) {
     const user = await this.dataSource
       .getRepository(User)
-      .findOne({ where: { email: payload.email } });
+      .findOne({ where: { id: userId } });
     if (!user) throw new BadRequestException('User not found.');
-
-    if (user.is_verified)
-      throw new BadRequestException('User is already verified.');
 
     const isValid = await this.otpService.validateOtp(
       user.id,
-      payload.code,
+      otp,
       OTPType.emailVerification,
     );
-    if (!isValid) throw new BadRequestException('Invalid OTP');
-
-    user.is_verified = true;
+    if (!isValid) throw new BadRequestException('You cannot set password.');
+    if (payload.password === payload.re_password) {
+      (user.password = await argon.hash(payload.password)),
+        (user.is_verified = true);
+    } else {
+      throw new BadRequestException('Password doesnot matched.');
+    }
     await this.dataSource.getRepository(User).save(user);
-    await this.otpService.deleteOtp(
-      user.id,
-      payload.code,
-      OTPType.emailVerification,
-    );
-
-    return payload.email;
-  }
-
-  // XXXXXXXXXXXXXXXXXX-------Resend email verification-------XXXXXXXXXXXXXXXXXX
-  async resendEmailVerification(input: ResendEmailVerificationCodeDTO) {
-    const user = await this.dataSource
-      .getRepository(User)
-      .findOne({ where: { email: input.email } });
-    if (!user) throw new NotFoundException('User with the email not found');
-    if (user.is_verified)
-      throw new BadRequestException('User already verified.');
-
-    const previousOtp = await this.otpService.findLastOtp(
-      user.id,
-      OTPType.emailVerification,
-    );
-
-    if (previousOtp) {
-      const waitTime = 1000 * 60 * 1; // resend only after one minute
-      const completedWaitTime =
-        previousOtp.created_at.getTime() + waitTime < Date.now();
-      if (!completedWaitTime) {
-        throw new BadRequestException('Please request OTP after one minute.');
-      }
+    if (OTPType.emailVerification) {
+      await this.otpService.deleteOtp(user.id, otp, OTPType.emailVerification);
+    }
+    if (OTPType.passwordReset) {
+      await this.otpService.deleteOtp(user.id, otp, OTPType.passwordReset);
     }
 
-    // send email with OTP
-    const otp = await this.otpService.createOtp(
-      user.id,
-      OTPType.emailVerification,
-    );
-
-    sendMail({
-      to: input.email,
-      subject: 'Email Verification',
-      html: defaultMailTemplate({
-        title: 'Email Verification',
-        name: user.full_name ?? 'User',
-        message: `Your OTP is ${otp.code}`,
-      }),
-    });
-
-    return { message: 'Email verification OTP has been resent.' };
+    return user.full_name;
   }
 
   // XXXXXXXXXXXXXXXXXX-------Reset password request-------XXXXXXXXXXXXXXXXXX
@@ -190,35 +148,36 @@ export class AuthService {
     //recreating new OTP---------------
     const otp = await this.otpService.createOtp(user.id, OTPType.passwordReset);
 
+    const linkToResetPassword = `http://localhost:8848/${user.id}/set-password/${otp.code}`;
+
     // New OTP Sended------------------
     sendMail({
       to: email,
-      subject: 'Password Request',
-      html: `Your otp for password reset is ${otp.code}`,
+      subject: 'Reset Your Password',
+      html: `Click the below link to reset password : \n ${linkToResetPassword}`,
     });
-    return `Password Reset OTP has been successfully sent to ${user.email}`;
+    return true;
   }
 
   // XXXXXXXXXXXXXXXXXX-------Reset password-------XXXXXXXXXXXXXXXXXX
-  async resetPassword(payload: ResetPasswordDto) {
+  async resetPassword(userId: string, payload: ResetPasswordDto, otp: string) {
     const user = await this.dataSource
       .getRepository(User)
-      .findOne({ where: { email: payload.email } });
+      .findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found.');
 
-    // Checking OTP existance ---------
-    if (!user) {
-      throw new BadRequestException('User not esxist.');
-    }
-
-    // Hashing New Password-----------
-    user.password = await argon.hash(payload.new_password);
-    await this.dataSource.getRepository(User).save(user);
-    await this.otpService.deleteOtp(
+    const isValid = await this.otpService.validateOtp(
       user.id,
-      payload.code,
+      otp,
       OTPType.passwordReset,
     );
-
-    return `Password reset Successfully of ${user.email}`;
+    if (!isValid) throw new BadRequestException('You cannot reset password.');
+    if (payload.password === payload.re_password) {
+      user.password = await argon.hash(payload.password);
+    } else {
+      throw new BadRequestException('Password doesnot matched.');
+    }
+    await this.dataSource.getRepository(User).save(user);
+    await this.otpService.deleteOtp(user.id, otp, OTPType.passwordReset);
   }
 }

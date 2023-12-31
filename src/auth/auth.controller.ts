@@ -1,9 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import {
   CreateCustomerDTO,
-  EmailVerificationDTO,
   LoginUserDTO,
-  ResendEmailVerificationCodeDTO,
+  PasswordCreationDTO,
   ResetPasswordDto,
   ResetPasswordRequestDTO,
 } from './dto/auth.dto';
@@ -36,24 +35,17 @@ export class AuthController {
     return this.authService.login(payload);
   }
 
-  @ResponseMessage(SuccessMessage.VERIFY, 'Email')
-  @Post('email-verification')
-  @ApiOperation({ summary: 'Verify otp code.' })
-  @ApiCreatedResponse({ description: 'Account verified.' })
-  @ApiUnauthorizedResponse({ description: 'Failed to verify an otp code.' })
-  verifyOtp(@Body() payload: EmailVerificationDTO) {
-    return this.authService.emailVerification(payload);
-  }
-
-  @ResponseMessage(SuccessMessage.SENT, 'Email OTP')
-  @Post('resend-email-verification')
-  @ApiOperation({ summary: 'Resend Email OTP' })
-  @ApiCreatedResponse({ description: 'OTP sent.' })
-  @ApiBadRequestResponse({
-    description: 'User already verified or email doesnot exists',
-  })
-  resendEmailVerification(@Body() payload: ResendEmailVerificationCodeDTO) {
-    return this.authService.resendEmailVerification(payload);
+  @ResponseMessage(SuccessMessage.CREATE, 'Password')
+  @Post('/:userId/set-password/:otp')
+  @ApiOperation({ summary: 'Set your password' })
+  @ApiCreatedResponse({ description: 'Password created.' })
+  @ApiUnauthorizedResponse({ description: 'Failed to create password.' })
+  verifyOtp(
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+    @Param('otp') otp: string,
+    @Body() payload: PasswordCreationDTO,
+  ) {
+    return this.authService.setPassword(userId, payload, otp);
   }
 
   @ResponseMessage(SuccessMessage.SENT, 'Reset Email OTP')
@@ -72,7 +64,7 @@ export class AuthController {
   }
 
   @ResponseMessage(SuccessMessage.CREATE, 'New password')
-  @Post('/reset')
+  @Post('/:userId/reset-password/:otp')
   @ApiOperation({
     summary: 'Reset the password from the api.',
   })
@@ -80,9 +72,13 @@ export class AuthController {
     description: 'The password has been reset successfully.',
   })
   @ApiBadRequestResponse({
-    description: 'Invalid OTP or Password not matched.',
+    description: 'Password not matched.',
   })
-  resetPassword(@Body() payload: ResetPasswordDto) {
-    return this.authService.resetPassword(payload);
+  resetPassword(
+    @Param('userId', new ParseUUIDPipe()) userId: string,
+    @Param('otp') otp: string,
+    @Body() payload: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(userId, payload, otp);
   }
 }

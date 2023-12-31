@@ -10,7 +10,6 @@ import {
   IsString,
   IsStrongPassword,
   Matches,
-  MaxLength,
   MinLength,
 } from 'class-validator';
 import { UserRole } from 'src/users/entities/user.entity';
@@ -49,12 +48,6 @@ export class CreateCustomerDTO {
   @IsIn([UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER])
   @IsOptional()
   role: UserRole;
-
-  @ApiProperty({ minLength: 8, example: 'Secret@123' })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  password: string;
 }
 
 export class LoginUserDTO {
@@ -75,17 +68,18 @@ export class LoginUserDTO {
   password: string;
 }
 
-export class EmailVerificationDTO {
-  @IsEmail()
-  @ApiProperty({ example: 'johndoe@example.com' })
-  @Transform(({ value }) => value.toLowerCase())
-  email: string;
-
+export class PasswordCreationDTO {
+  @ApiProperty({ minLength: 8, example: 'Secret@123' })
   @IsString()
-  @MinLength(6)
-  @MaxLength(6)
-  @ApiProperty({ example: '123456' })
-  code: string;
+  @IsNotEmpty()
+  @MinLength(8)
+  password: string;
+
+  @ApiProperty({ minLength: 8, example: 'Secret@123' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  re_password: string;
 }
 
 export class ResendEmailVerificationCodeDTO {
@@ -102,29 +96,7 @@ export class ResetPasswordRequestDTO {
   email: string;
 }
 
-export class ResetPasswordDto {
-  @IsEmail()
-  @ApiProperty({ example: 'johndoe@example.com' })
-  @Transform(({ value }) => value.toLowerCase())
-  email: string;
-
-  @ApiProperty({ example: '123456' })
-  @IsString()
-  @MinLength(6)
-  @MaxLength(6)
-  code: string;
-
-  @ApiProperty({ minLength: 8, example: 'Secret@123' })
-  @IsStrongPassword({
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-  })
-  @IsNotEmpty()
-  @IsString()
-  new_password: string;
-}
+export class ResetPasswordDto extends PasswordCreationDTO {}
 
 export class CreateServiceProviderDTO {
   @ApiProperty({ example: 'johndoe@gmail.com' })

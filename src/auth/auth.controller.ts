@@ -22,6 +22,7 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // To create customer
   @ResponseMessage(SuccessMessage.REGISTER, 'User')
   @Post('register')
   register(@Body() payload: CreateCustomerDTO) {
@@ -29,12 +30,14 @@ export class AuthController {
     return this.authService.createUser(payload);
   }
 
+  // To login user
   @ResponseMessage(SuccessMessage.LOGGED_IN, 'User')
   @Post('login')
   login(@Body() payload: LoginUserDTO) {
     return this.authService.login(payload);
   }
 
+  // To create password
   @ResponseMessage(SuccessMessage.CREATE, 'Password')
   @Post('/:userId/set-password/:otp')
   @ApiOperation({ summary: 'Set your password' })
@@ -48,6 +51,7 @@ export class AuthController {
     return this.authService.setPassword(userId, payload, otp);
   }
 
+  // Request for reseting password
   @ResponseMessage(SuccessMessage.SENT, 'Reset Email OTP')
   @Post('/reset-request')
   @ApiOperation({
@@ -63,6 +67,7 @@ export class AuthController {
     return this.authService.passwordForgotRequest(payload);
   }
 
+  // For reseting password
   @ResponseMessage(SuccessMessage.CREATE, 'New password')
   @Post('/:userId/reset-password/:otp')
   @ApiOperation({

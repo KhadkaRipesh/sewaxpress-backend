@@ -28,7 +28,6 @@ export class AuthService {
   ) {}
 
   // XXXXXXXXXXXXXXXXXX-------REGISTER USER-------XXXXXXXXXXXXXXXXXX
-
   async createUser(payload: CreateCustomerDTO) {
     const { email, role, ...extra } = payload;
     const emailExist = await this.dataSource

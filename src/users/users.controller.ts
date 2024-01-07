@@ -24,7 +24,7 @@ export class UsersController {
   @Get('filter-users')
   @ResponseMessage(SuccessMessage.FETCH, 'Users')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
+  @Roles(UserRole.ADMIN)
   async getAllUSers(
     @Query() query: PaginationDto,
     @Query() filter: UserFilterDTO,

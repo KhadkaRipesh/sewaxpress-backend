@@ -21,6 +21,7 @@ export class UsersController {
     return user;
   }
 
+  // Filter users with roles
   @Get('filter-users')
   @ResponseMessage(SuccessMessage.FETCH, 'Users')
   @UseGuards(JwtAuthGuard, RolesGuard)

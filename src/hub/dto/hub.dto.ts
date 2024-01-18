@@ -11,7 +11,7 @@ import { HubTimingDto } from './hub-days.dto';
 import { Type } from 'class-transformer';
 
 export enum HubStatus {
-  PENDING = 'PENDING', // when hub is created by seller
+  PENDING = 'PENDING', // when hub is created by service provider
   ACTIVE = 'ACTIVE', // when hub is approved by admin
   CLOSED = 'CLOSED', // when hub is closed by admin
   SUSPENDED = 'SUSPENDED', // when hub is temporarily suspended by admin

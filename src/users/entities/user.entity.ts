@@ -1,3 +1,5 @@
+import { HubReview } from 'src/hub/entities/hub-review.entity';
+import { Hub } from 'src/hub/entities/hub.entity';
 import { OTP } from 'src/otp/entities/otp.entity';
 import {
   Column,
@@ -5,6 +7,7 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -67,4 +70,12 @@ export class User {
 
   @OneToMany(() => OTP, (otp) => otp.user, { cascade: true })
   otps: OTP[];
+
+  @OneToOne(() => Hub, (hub) => hub.user, { cascade: true })
+  hub: Hub;
+
+  @OneToMany(() => HubReview, (hub_review) => hub_review.user, {
+    cascade: true,
+  })
+  hub_reviews: HubReview[];
 }

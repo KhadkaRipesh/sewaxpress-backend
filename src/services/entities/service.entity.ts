@@ -1,4 +1,3 @@
-import { ServiceCategory } from 'src/service-category/entities/category.entity';
 import {
   Column,
   Entity,
@@ -6,19 +5,20 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Category } from './category.entity';
 
 @Entity({ name: 'services' })
-export class ServiceList {
+export class Service {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   category_id: string;
-  @ManyToOne(() => ServiceCategory, (category) => category.serviceList, {
+  @ManyToOne(() => Category, (category) => category.serviceList, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'category_id' })
-  category: ServiceCategory;
+  category: Category;
 
   @Column()
   name: string;

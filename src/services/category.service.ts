@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CreateCategoryDTO, UpdateCategoryDTO } from './dto/category.dto';
-import { ServiceCategory } from './entities/category.entity';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
 import { paginateResponse } from 'src/@helpers/pagination';
+import { CreateCategoryDTO, UpdateCategoryDTO } from './dto/category.dto';
+import { Category } from './entities/category.entity';
 
 @Injectable()
-export class ServiceCategoryService {
+export class CategoryService {
   constructor(private readonly dataSource: DataSource) {}
 
   //   To create Category
-  async createCategory(payload: CreateCategoryDTO): Promise<ServiceCategory> {
+  async createCategory(payload: CreateCategoryDTO): Promise<Category> {
     const new_category = await this.dataSource
-      .getRepository(ServiceCategory)
+      .getRepository(Category)
       .save(payload);
     return new_category;
   }
@@ -21,7 +21,7 @@ export class ServiceCategoryService {
   async getServiceCategory(query: PaginationDto) {
     const skip = (query.page - 1) * query.limit;
     const categories = await this.dataSource
-      .getRepository(ServiceCategory)
+      .getRepository(Category)
       .findAndCount({
         take: query.limit,
         skip: skip,
@@ -31,7 +31,7 @@ export class ServiceCategoryService {
   //   To get individual service category detail
   async getServiceCategoryDetails(category_id: string) {
     const category_details = await this.dataSource
-      .getRepository(ServiceCategory)
+      .getRepository(Category)
       .findOne({ where: { id: category_id } });
     return category_details;
   }
@@ -40,14 +40,12 @@ export class ServiceCategoryService {
   async updateCategoryDetails(category_id: string, payload: UpdateCategoryDTO) {
     const category = await this.getServiceCategoryDetails(category_id);
     category.category_name = payload.category_name;
-    return await this.dataSource.getRepository(ServiceCategory).save(category);
+    return await this.dataSource.getRepository(Category).save(category);
   }
 
   //   To delete the category
   async deleteCategory(category_id: string) {
     const to_delete = await this.getServiceCategoryDetails(category_id);
-    return await this.dataSource
-      .getRepository(ServiceCategory)
-      .remove(to_delete);
+    return await this.dataSource.getRepository(Category).remove(to_delete);
   }
 }

@@ -10,19 +10,19 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ServiceCategoryService } from './service-category.service';
 import { ResponseMessage } from 'src/@decoraters/response.decorater';
 import { SuccessMessage } from 'src/@utils';
-import { CreateCategoryDTO, UpdateCategoryDTO } from './dto/category.dto';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { UserRole } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { RolesGuard } from 'src/@guards/roles.guard';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
+import { CategoryService } from './category.service';
+import { CreateCategoryDTO, UpdateCategoryDTO } from './dto/category.dto';
 
-@Controller('service-category')
-export class ServiceCategoryController {
-  constructor(private readonly categoryService: ServiceCategoryService) {}
+@Controller('category')
+export class CategoryController {
+  constructor(private readonly categoryService: CategoryService) {}
 
   // To create service category
   @ResponseMessage(SuccessMessage.CREATE, 'Service')

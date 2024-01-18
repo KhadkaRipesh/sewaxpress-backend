@@ -8,10 +8,9 @@ import { AuthModule } from './auth/auth.module';
 import { OtpModule } from './otp/otp.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './@interceptors/transform.interceptor';
-import { ServicelistModule } from './servicelist/servicelist.module';
-import { ServiceCategoryModule } from './service-category/service-category.module';
 import { CartModule } from './cart/cart.module';
 import { PreferencesModule } from './preferences/preferences.module';
+import { ServiceModule } from './services/service.module';
 
 @Module({
   imports: [
@@ -21,8 +20,7 @@ import { PreferencesModule } from './preferences/preferences.module';
     UsersModule,
     AuthModule,
     OtpModule,
-    ServicelistModule,
-    ServiceCategoryModule,
+    ServiceModule,
     CartModule,
     PreferencesModule,
   ],

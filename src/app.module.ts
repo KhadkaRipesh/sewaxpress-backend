@@ -11,6 +11,7 @@ import { TransformInterceptor } from './@interceptors/transform.interceptor';
 import { CartModule } from './cart/cart.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { ServiceModule } from './services/service.module';
+import { HubModule } from './hub/hub.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ServiceModule } from './services/service.module';
     ServiceModule,
     CartModule,
     PreferencesModule,
+    HubModule,
   ],
   controllers: [AppController],
   providers: [

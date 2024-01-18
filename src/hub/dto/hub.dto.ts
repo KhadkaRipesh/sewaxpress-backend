@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBooleanString,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -8,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { HubTimingDto } from './hub-days.dto';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export enum HubStatus {
   PENDING = 'PENDING', // when hub is created by service provider
@@ -83,4 +86,42 @@ export class CreateHubDto {
   @Type(() => HubTimingDto)
   @IsOptional()
   opening_hours?: HubTimingDto;
+}
+export class GetHubByStatusDto {
+  @ApiPropertyOptional({
+    type: 'enum',
+    example: HubStatus.PENDING,
+    enum: HubStatus,
+  })
+  @IsEnum(HubStatus)
+  @IsOptional()
+  status: HubStatus;
+
+  @ApiPropertyOptional({ example: 12 })
+  @IsInt()
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  page: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsInt()
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  limit: number;
+}
+
+export class UpdateHubDto extends CreateHubDto {
+  @ApiPropertyOptional({
+    type: 'enum',
+    example: HubStatus.PENDING,
+    enum: HubStatus,
+  })
+  @IsEnum(HubStatus)
+  @IsOptional()
+  status: HubStatus;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBooleanString()
+  is_verified: boolean;
 }

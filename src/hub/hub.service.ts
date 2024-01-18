@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { CreateHubDto } from './dto/hub.dto';
 import { Hub } from './entities/hub.entity';
 import { BASE_URL } from 'src/@config/constants.config';
+import { error } from 'console';
 
 @Injectable()
 export class HubService {
@@ -15,21 +16,41 @@ export class HubService {
     payload: CreateHubDto,
     files: Express.Multer.File[],
   ) {
-    if (!files['avatar']) throw new BadRequestException('Avatar is required');
-    if (!files['documents'])
-      throw new BadRequestException('Documents are required');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if (!files['avatar']) throw new BadRequestException('Avatar is required');
+      if (!files['documents'])
+        throw new BadRequestException('Documents are required');
 
-    payload.avatar = '/' + files['avatar'][0].path;
+      payload.avatar = '/' + files['avatar'][0].path;
 
-    payload.documents = [];
-    files['documents'].forEach((document) => {
-      payload.documents.push('/' + document.path);
-    });
+      payload.documents = [];
+      files['documents'].forEach((document) => {
+        payload.documents.push('/' + document.path);
+      });
 
-    const hub = await this.dataSource.getRepository(Hub).save(payload);
-    hub.avatar = BASE_URL.backend + hub.avatar;
-    hub.documents = hub.documents.map((path) => BASE_URL.backend + path);
+      //Check if user already has a shop
+      const hubExist = await this.dataSource
+        .getRepository(Hub)
+        .findOne({ where: { user_id } });
+      if (hubExist)
+        throw new BadRequestException('User already have a service hub');
 
-    return hub;
+      const hub = await this.dataSource
+        .getRepository(Hub)
+        .save({ ...payload, user_id });
+      hub.avatar = BASE_URL.backend + hub.avatar;
+      hub.documents = hub.documents.map((path) => BASE_URL.backend + path);
+
+      await queryRunner.commitTransaction();
+      return hub;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(e.message);
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

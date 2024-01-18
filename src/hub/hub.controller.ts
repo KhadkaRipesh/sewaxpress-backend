@@ -17,6 +17,8 @@ import { Roles } from 'src/@decoraters/getRole.decorater';
 import { UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { CreateHubDto } from './dto/hub.dto';
+import { ResponseMessage } from 'src/@decoraters/response.decorater';
+import { SuccessMessage } from 'src/@utils';
 
 @ApiTags('service hub')
 @Controller('hub')
@@ -24,6 +26,7 @@ export class HubController {
   constructor(private readonly hubService: HubService) {}
 
   @Post()
+  @ResponseMessage(SuccessMessage.CREATE, 'service hub')
   @UseInterceptors(
     FileFieldsInterceptor(
       [

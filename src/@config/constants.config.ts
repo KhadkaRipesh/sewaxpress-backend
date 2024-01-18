@@ -18,3 +18,8 @@ export const SMTP_INFO = {
   port: parseInt(process.env.SMTP_PORT!),
   password: process.env.SMTP_PASSWORD!,
 };
+
+export const BASE_URL = {
+  frontend: process.env.FRONTEND_URL,
+  backend: process.env.BACKEND_URL,
+};

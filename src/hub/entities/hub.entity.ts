@@ -76,5 +76,5 @@ export class Hub {
   @OneToMany(() => Service, (service) => service.hub, {
     cascade: true,
   })
-  service: Service[];
+  services: Service[];
 }

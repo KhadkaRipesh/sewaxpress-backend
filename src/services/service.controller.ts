@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -113,6 +114,23 @@ export class ServiceController {
     );
   }
 
+  // Get All Deleted Service
+  @Get('trash')
+  @ResponseMessage(SuccessMessage.FETCH, 'Deleted Service')
+  @ApiOperation({
+    summary: 'Get All Deleted Service.',
+    description: `${UserRole.SERVICE_PROVIDER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.SERVICE_PROVIDER)
+  getAllDeletedItems(
+    @GetUser('id') user_id: string,
+    @Query() query: PaginationDto,
+  ) {
+    return this.serviceService.getAllDeletedServices(user_id, query);
+  }
+
   // ------------Get Service By Id
   @Get('/:service_id')
   @ResponseMessage(SuccessMessage.FETCH, 'Service')
@@ -150,5 +168,57 @@ export class ServiceController {
     @Query() pagination: PaginationDto,
   ) {
     return this.serviceService.getAllService(location, category_id, pagination);
+  }
+
+  // Soft delete Service
+
+  @Delete('/:service_id')
+  @ResponseMessage(SuccessMessage.DELETE, 'Service')
+  @ApiOperation({
+    summary: 'Soft Delete Service.',
+    description: `${UserRole.SERVICE_PROVIDER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.SERVICE_PROVIDER)
+  deleteService(
+    @GetUser('id') user_id: string,
+    @Param('service_id', new ParseUUIDPipe()) service_id: string,
+  ) {
+    return this.serviceService.deleteService(service_id, user_id);
+  }
+
+  //  Recover deleted Service
+  @Post('recover/:service_id')
+  @ResponseMessage(SuccessMessage.STORED, 'Deleted Service')
+  @ApiOperation({
+    summary: 'Recover Deleted Service.',
+    description: `${UserRole.SERVICE_PROVIDER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.SERVICE_PROVIDER)
+  recoverService(
+    @GetUser('id') user_id: string,
+    @Param('service_id', new ParseUUIDPipe()) service_id: string,
+  ) {
+    return this.serviceService.recoverService(service_id, user_id);
+  }
+
+  // Permanent Delete Service
+  @Delete('trash/:service_id')
+  @ResponseMessage(SuccessMessage.DELETE, 'Service')
+  @ApiOperation({
+    summary: 'Permanent Delete Service.',
+    description: `${UserRole.SERVICE_PROVIDER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.SERVICE_PROVIDER)
+  deleteServicePermanently(
+    @GetUser('id') user_id: string,
+    @Param('service_id', new ParseUUIDPipe()) service_id: string,
+  ) {
+    return this.serviceService.deleteServicePermanently(service_id, user_id);
   }
 }

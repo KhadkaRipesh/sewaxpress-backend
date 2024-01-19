@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -27,6 +28,7 @@ import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { CreateServiceDto } from './dto/service.dto';
 import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { RolesGuard } from 'src/@guards/roles.guard';
+import { PaginationDto } from 'src/@helpers/pagination.dto';
 
 @ApiTags('Service')
 @Controller('service')
@@ -69,7 +71,24 @@ export class ServiceController {
   getService(
     @Param('location') location: string,
     @Param('category') category_id: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.serviceService.getAllService(location, category_id);
+    return this.serviceService.getAllService(location, category_id, pagination);
+  }
+
+  @Get('my-service')
+  @ResponseMessage(SuccessMessage.FETCH, 'Service')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOperation({
+    summary: 'Get Own Service',
+    description: UserRole.SERVICE_PROVIDER,
+  })
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.SERVICE_PROVIDER)
+  getMyService(
+    @GetUser('id') user_id: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.serviceService.getMyService(user_id, pagination);
   }
 }

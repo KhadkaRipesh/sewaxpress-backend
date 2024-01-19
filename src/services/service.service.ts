@@ -5,6 +5,8 @@ import { Hub } from 'src/hub/entities/hub.entity';
 import { Category } from './entities/category.entity';
 import { Service } from './entities/service.entity';
 import { BASE_URL } from 'src/@config/constants.config';
+import { PaginationDto } from 'src/@helpers/pagination.dto';
+import { paginateResponse } from 'src/@helpers/pagination';
 
 @Injectable()
 export class ServiceService {
@@ -36,7 +38,12 @@ export class ServiceService {
   }
 
   //   Get All Services from address
-  async getAllService(location: string, category: string) {
+  async getAllService(
+    location: string,
+    category: string,
+    pagination: PaginationDto,
+  ) {
+    const skip = (pagination.page - 1) * pagination.limit;
     const query = this.dataSource
       .getRepository(Service)
       .createQueryBuilder('service')
@@ -52,13 +59,46 @@ export class ServiceService {
         'service.price',
         'service.is_available',
         'service.image',
-        'hub.name as "hub name"',
-        'hub.address as "hub address"',
-        'category.category_name as "category name"',
-      ]);
+        'hub.name',
+        'hub.address',
+        'category.category_name',
+      ])
+      .take(pagination.limit)
+      .skip(skip);
 
     //   can add review of the service or hub too
-    const rawData = await query.getRawMany();
-    return rawData;
+    const rawData = await query.getManyAndCount();
+
+    return paginateResponse(rawData, pagination.page, pagination.limit);
+  }
+
+  async getMyService(user_id: string, query: PaginationDto) {
+    const skip = (query.page - 1) * query.limit;
+    const data = this.dataSource
+      .getRepository(Service)
+      .createQueryBuilder('service')
+      .leftJoin('service.hub', 'hub')
+      .leftJoin('service.category', 'category')
+      .leftJoin('hub.user', 'user')
+      .where('user.id =:user_id', { user_id })
+      .select([
+        'service.id',
+        'service.name',
+        'service.description',
+        'service.estimated_time',
+        'service.price',
+        'service.is_available',
+        'service.image',
+        'hub.name',
+        'hub.address',
+        'category.category_name',
+      ])
+      .skip(skip)
+      .take(query.limit)
+      .getManyAndCount();
+
+    const finalData = await data;
+
+    return paginateResponse(finalData, query.page, query.limit);
   }
 }

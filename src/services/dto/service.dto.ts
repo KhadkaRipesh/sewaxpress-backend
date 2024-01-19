@@ -49,3 +49,10 @@ export class CreateServiceDto {
   @IsUUID()
   category_id: string;
 }
+
+export class SearchPayloadDto {
+  @ApiProperty({ example: 'any service' })
+  @IsString()
+  @IsNotEmpty()
+  service_name: string;
+}

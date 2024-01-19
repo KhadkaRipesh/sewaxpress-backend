@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CreateServiceDto } from './dto/service.dto';
+import { CreateServiceDto, SearchPayloadDto } from './dto/service.dto';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { Category } from './entities/category.entity';
 import { Service } from './entities/service.entity';
@@ -44,7 +44,9 @@ export class ServiceService {
     category: string,
     pagination: PaginationDto,
   ) {
-    const skip = (pagination.page - 1) * pagination.limit;
+    const take = pagination.limit || 10;
+    const page = pagination.page || 1;
+    const skip = (page - 1) * take;
     const query = this.dataSource
       .getRepository(Service)
       .createQueryBuilder('service')
@@ -64,17 +66,19 @@ export class ServiceService {
         'hub.address',
         'category.category_name',
       ])
-      .take(pagination.limit)
+      .take(take)
       .skip(skip);
 
     //   can add review of the service or hub too
     const rawData = await query.getManyAndCount();
 
-    return paginateResponse(rawData, pagination.page, pagination.limit);
+    return paginateResponse(rawData, page, take);
   }
 
   async getMyService(user_id: string, query: PaginationDto) {
-    const skip = (query.page - 1) * query.limit;
+    const take = query.limit || 10;
+    const page = query.page || 1;
+    const skip = (page - 1) * take;
     const data = this.dataSource
       .getRepository(Service)
       .createQueryBuilder('service')
@@ -95,12 +99,12 @@ export class ServiceService {
         'category.category_name',
       ])
       .skip(skip)
-      .take(query.limit)
+      .take(take)
       .getManyAndCount();
 
     const finalData = await data;
 
-    return paginateResponse(finalData, query.page, query.limit);
+    return paginateResponse(finalData, page, take);
   }
 
   // To update Service
@@ -156,5 +160,42 @@ export class ServiceService {
 
     const rawData = await query.getRawOne();
     return rawData;
+  }
+
+  async getServiceByName(
+    searchPayload: SearchPayloadDto,
+    query: PaginationDto,
+  ) {
+    const take = query.limit || 10;
+    const page = query.page || 1;
+    const skip = (page - 1) * take;
+
+    const sql = this.dataSource
+      .getRepository(Service)
+      .createQueryBuilder('service')
+      .leftJoin('service.hub', 'hub')
+      .leftJoin('service.category', 'category')
+      .where({ is_available: true })
+      .andWhere('service.name LIKE :service_name', {
+        service_name: `%${searchPayload.service_name}%`,
+      })
+      .select([
+        'service.id',
+        'service.name',
+        'service.description',
+        'service.estimated_time',
+        'service.price',
+        'service.is_available',
+        'service.image',
+        'hub.name',
+        'hub.address',
+        'category.category_name',
+      ])
+      .skip(skip)
+      .take(take);
+
+    const rawData = await sql.getManyAndCount();
+
+    return paginateResponse(rawData, page, take);
   }
 }

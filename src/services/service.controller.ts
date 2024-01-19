@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   UploadedFile,
   UseGuards,
@@ -56,5 +58,18 @@ export class ServiceController {
     if (!file) throw new BadRequestException('Image for service is required.');
     payload.image = '/' + file.path;
     return this.serviceService.createService(user_id, payload);
+  }
+
+  //   Get Service with filtering
+  @Get('/:location/:category')
+  @ResponseMessage(SuccessMessage.FETCH, 'Services')
+  @ApiOperation({
+    summary: 'Get Service',
+  })
+  getService(
+    @Param('location') location: string,
+    @Param('category') category_id: string,
+  ) {
+    return this.serviceService.getAllService(location, category_id);
   }
 }

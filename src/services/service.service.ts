@@ -34,4 +34,31 @@ export class ServiceService {
 
     return service;
   }
+
+  //   Get All Services from address
+  async getAllService(location: string, category: string) {
+    const query = this.dataSource
+      .getRepository(Service)
+      .createQueryBuilder('service')
+      .leftJoin('service.hub', 'hub')
+      .leftJoin('service.category', 'category')
+      .where('hub.address = :location', { location })
+      .andWhere('category.id =:category', { category })
+      .select([
+        'service.id',
+        'service.name',
+        'service.description',
+        'service.estimated_time',
+        'service.price',
+        'service.is_available',
+        'service.image',
+        'hub.name as "hub name"',
+        'hub.address as "hub address"',
+        'category.category_name as "category name"',
+      ]);
+
+    //   can add review of the service or hub too
+    const rawData = await query.getRawMany();
+    return rawData;
+  }
 }

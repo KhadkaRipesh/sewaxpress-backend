@@ -4,6 +4,8 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UploadedFile,
@@ -35,6 +37,7 @@ import { PaginationDto } from 'src/@helpers/pagination.dto';
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
+  // ------------------------Create Service
   @Post()
   @ResponseMessage(SuccessMessage.CREATE, 'Service')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -62,7 +65,7 @@ export class ServiceController {
     return this.serviceService.createService(user_id, payload);
   }
 
-  //   Get Service with filtering
+  //-------------------Get Service with filtering
   @Get('/:location/:category')
   @ResponseMessage(SuccessMessage.FETCH, 'Services')
   @ApiOperation({
@@ -76,6 +79,7 @@ export class ServiceController {
     return this.serviceService.getAllService(location, category_id, pagination);
   }
 
+  // ----------------------Get Own Service---------------------
   @Get('my-service')
   @ResponseMessage(SuccessMessage.FETCH, 'Service')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -90,5 +94,46 @@ export class ServiceController {
     @Query() pagination: PaginationDto,
   ) {
     return this.serviceService.getMyService(user_id, pagination);
+  }
+
+  @Patch('/:service_id')
+  @ResponseMessage(SuccessMessage.UPDATE, 'Service')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOperation({
+    summary: 'Update a Service',
+    description: UserRole.SERVICE_PROVIDER,
+  })
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.SERVICE_PROVIDER)
+  @ApiConsumes('multipart/form-data')
+  @ApiConsumes('application/json')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({ destination: 'static/service', filename }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  updateService(
+    @GetUser('id') user_id: string,
+    @Param('service_id', new ParseUUIDPipe()) service_id: string,
+    @Body() payload: CreateServiceDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.serviceService.updateService(
+      user_id,
+      service_id,
+      payload,
+      file,
+    );
+  }
+
+  // ------------Get Service By Id
+  @Get('/:service_id')
+  @ResponseMessage(SuccessMessage.FETCH, 'Service')
+  @ApiOperation({
+    summary: 'Get Service',
+  })
+  getServiceById(@Param('service_id', new ParseUUIDPipe()) service_id: string) {
+    return this.serviceService.getServiceById(service_id);
   }
 }

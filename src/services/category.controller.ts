@@ -25,25 +25,24 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   // To create service category
-  @ResponseMessage(SuccessMessage.CREATE, 'Service')
+  @ResponseMessage(SuccessMessage.CREATE, 'Service Category')
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SERVICE_PROVIDER)
   register(@Body() payload: CreateCategoryDTO) {
     return this.categoryService.createCategory(payload);
   }
 
   // To get service category
-  @ResponseMessage(SuccessMessage.FETCH, 'Service')
+  @ResponseMessage(SuccessMessage.FETCH, 'Service Category')
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
   getCategory(@Query() query: PaginationDto) {
     return this.categoryService.getServiceCategory(query);
   }
 
   // To get service category details
-  @ResponseMessage(SuccessMessage.FETCH, 'Service')
+  @ResponseMessage(SuccessMessage.FETCH, 'Service Category')
   @Get('category-id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -52,7 +51,7 @@ export class CategoryController {
   }
 
   // To update service category details
-  @ResponseMessage(SuccessMessage.UPDATE, 'Service')
+  @ResponseMessage(SuccessMessage.UPDATE, 'Service Category')
   @Patch('category-id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -64,7 +63,7 @@ export class CategoryController {
   }
 
   //   To delete service category details
-  @ResponseMessage(SuccessMessage.DELETE, 'Service')
+  @ResponseMessage(SuccessMessage.DELETE, 'Service Category')
   @Delete('category-id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

@@ -7,6 +7,7 @@ import { Service } from './entities/service.entity';
 import { BASE_URL } from 'src/@config/constants.config';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
 import { paginateResponse } from 'src/@helpers/pagination';
+import * as fs from 'fs';
 
 @Injectable()
 export class ServiceService {
@@ -100,5 +101,60 @@ export class ServiceService {
     const finalData = await data;
 
     return paginateResponse(finalData, query.page, query.limit);
+  }
+
+  // To update Service
+
+  async updateService(
+    user_id: string,
+    service_id: string,
+    payload: CreateServiceDto,
+    file: Express.Multer.File,
+  ) {
+    const service = await this.dataSource.getRepository(Service).findOne({
+      where: {
+        id: service_id,
+        hub: { id: payload.hub_id, user_id: user_id },
+      },
+    });
+    if (!service)
+      throw new BadRequestException('Service doesnot belog to the hub.');
+
+    if (file) {
+      payload.image = '/' + file.path;
+      if (service.image) {
+        const path = service.image.slice(1);
+        fs.unlinkSync(path);
+      }
+    }
+
+    const updated_service = await this.dataSource
+      .getRepository(Service)
+      .save({ id: service_id, ...payload });
+
+    return updated_service;
+  }
+
+  // Get service by id
+  async getServiceById(service_id: string) {
+    const query = this.dataSource
+      .getRepository(Service)
+      .createQueryBuilder('service')
+      .where('service.id =:service_id', { service_id })
+      .andWhere('service.is_available = true')
+      .select([
+        'service.id',
+        'service.name',
+        'service.image',
+        'service.description',
+        'service.estimated_time',
+        'service.price',
+        'service.is_available',
+        'service.category_id',
+        'service.hub_id',
+      ]);
+
+    const rawData = await query.getRawOne();
+    return rawData;
   }
 }

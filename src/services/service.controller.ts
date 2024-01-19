@@ -27,7 +27,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { filename, imageFileFilter } from 'src/@helpers/storage';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
-import { CreateServiceDto } from './dto/service.dto';
+import { CreateServiceDto, SearchPayloadDto } from './dto/service.dto';
 import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { RolesGuard } from 'src/@guards/roles.guard';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
@@ -63,20 +63,6 @@ export class ServiceController {
     if (!file) throw new BadRequestException('Image for service is required.');
     payload.image = '/' + file.path;
     return this.serviceService.createService(user_id, payload);
-  }
-
-  //-------------------Get Service with filtering
-  @Get('/:location/:category')
-  @ResponseMessage(SuccessMessage.FETCH, 'Services')
-  @ApiOperation({
-    summary: 'Get Service',
-  })
-  getService(
-    @Param('location') location: string,
-    @Param('category') category_id: string,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.serviceService.getAllService(location, category_id, pagination);
   }
 
   // ----------------------Get Own Service---------------------
@@ -135,5 +121,34 @@ export class ServiceController {
   })
   getServiceById(@Param('service_id', new ParseUUIDPipe()) service_id: string) {
     return this.serviceService.getServiceById(service_id);
+  }
+
+  // Search Service By Name
+
+  @Get('search/search-by-name')
+  @ResponseMessage(SuccessMessage.FETCH, 'Service Name')
+  @ApiOperation({
+    summary: 'Search Service By Name(No Auth Required)',
+    description: 'UserRole.All',
+  })
+  getItemByName(
+    @Query() query: SearchPayloadDto,
+    @Query() query1: PaginationDto,
+  ) {
+    return this.serviceService.getServiceByName(query, query1);
+  }
+
+  //-------------------Get Service with filtering
+  @Get('/:location/:category')
+  @ResponseMessage(SuccessMessage.FETCH, 'Services')
+  @ApiOperation({
+    summary: 'Get Service',
+  })
+  getService(
+    @Param('location') location: string,
+    @Param('category') category_id: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.serviceService.getAllService(location, category_id, pagination);
   }
 }

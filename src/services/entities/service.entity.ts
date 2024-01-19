@@ -54,7 +54,7 @@ export class Service {
 
   @Column()
   hub_id: string;
-  @ManyToOne(() => Hub, (hub) => hub.service, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Hub, (hub) => hub.services, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'hub_id' })
   hub: Hub;
 

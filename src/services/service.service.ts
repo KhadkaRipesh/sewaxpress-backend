@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull, Not } from 'typeorm';
 import { CreateServiceDto, SearchPayloadDto } from './dto/service.dto';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { Category } from './entities/category.entity';
@@ -8,6 +8,7 @@ import { BASE_URL } from 'src/@config/constants.config';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
 import { paginateResponse } from 'src/@helpers/pagination';
 import * as fs from 'fs';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ServiceService {
@@ -176,7 +177,7 @@ export class ServiceService {
       .leftJoin('service.hub', 'hub')
       .leftJoin('service.category', 'category')
       .where({ is_available: true })
-      .andWhere('service.name LIKE :service_name', {
+      .andWhere('service.name ILIKE :service_name', {
         service_name: `%${searchPayload.service_name}%`,
       })
       .select([
@@ -197,5 +198,82 @@ export class ServiceService {
     const rawData = await sql.getManyAndCount();
 
     return paginateResponse(rawData, page, take);
+  }
+
+  // Soft delete service
+
+  async deleteService(service_id: string, user_id: string) {
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoin('user.hub', 'hub')
+      .leftJoin('hub.services', 'service')
+      .where('service.id =:service_id', { service_id })
+      .andWhere('user.id =:user_id', { user_id })
+      .getOne();
+
+    if (!user) throw new BadRequestException('You are not authorized');
+
+    const toDelete = await this.dataSource
+      .getRepository(Service)
+      .softDelete(service_id);
+
+    return toDelete;
+  }
+
+  // Get All deleted Service
+  async getAllDeletedServices(user_id: string, query: PaginationDto) {
+    const take = query.limit || 10;
+    const page = query.page || 1;
+    const skip = (page - 1) * take;
+
+    const deletedService = await this.dataSource
+      .getRepository(Service)
+      .findAndCount({
+        where: {
+          hub: {
+            user_id,
+          },
+          deleted_at: Not(IsNull()),
+        },
+        withDeleted: true,
+        relations: ['category', 'hub'],
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          description: true,
+          price: true,
+          is_available: true,
+          hub: { id: true, name: true },
+          category: { id: true, category_name: true },
+        },
+        take,
+        skip,
+      });
+
+    return paginateResponse(deletedService, page, take);
+  }
+
+  // Recover deleted Service
+  async recoverService(service_id: string, user_id: string) {
+    const service = await this.dataSource.getRepository(Service).findOne({
+      where: { id: service_id, hub: { user_id }, deleted_at: Not(IsNull()) },
+      withDeleted: true,
+    });
+    if (!service) throw new BadRequestException('Service not found on trash.');
+
+    return await this.dataSource.getRepository(Service).restore(service_id);
+  }
+
+  // Permanent delete Servic
+  async deleteServicePermanently(service_id: string, user_id: string) {
+    const isValidUser = await this.dataSource.getRepository(Service).findOne({
+      where: { id: service_id, deleted_at: Not(IsNull()), hub: { user_id } },
+      withDeleted: true,
+    });
+    if (!isValidUser) throw new BadRequestException('No such Service on Trash');
+
+    return await this.dataSource.getRepository(Service).delete(service_id);
   }
 }

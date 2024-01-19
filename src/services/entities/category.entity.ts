@@ -12,5 +12,5 @@ export class Category {
   @OneToMany(() => Service, (serviceList) => serviceList.category, {
     cascade: true,
   })
-  serviceList: Service[];
+  service: Service[];
 }

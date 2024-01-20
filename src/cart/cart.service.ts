@@ -208,12 +208,12 @@ export class CartService {
 
   // Delete cart service--------
   async deleteServiceFromCart(customer_id: string, service_id: string) {
-    const service = await this.dataSource
-      .getRepository(Cart)
-      .findOne({ where: { customer_id, cart_services: { service_id } } });
-    if (service)
+    const service = await this.dataSource.getRepository(Cart).findOne({
+      where: { customer_id, cart_services: { service_id: service_id } },
+      relations: ['cart_services'],
+    });
+    if (!service)
       throw new BadRequestException('Services does not exist on cart.');
-
     await this.dataSource
       .getRepository(CartItem)
       .delete({ id: service.cart_services[0].id });

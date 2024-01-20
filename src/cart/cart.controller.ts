@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -106,5 +107,17 @@ export class CartController {
   @Roles(UserRole.CUSTOMER)
   deleteCart(@GetUser('id') customer_id: string) {
     return this.cartService.deleteCart(customer_id);
+  }
+
+  @Get()
+  @ResponseMessage(SuccessMessage.FETCH, 'Cart')
+  @ApiOperation({
+    summary: 'Get user cart',
+    description: `${UserRole.CUSTOMER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  getCart(@GetUser('id') customer_id: string) {
+    return this.cartService.getCart(customer_id);
   }
 }

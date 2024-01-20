@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
+import { CartService } from 'src/cart/entities/cart-service.entity';
 
 @Entity({ name: 'services' })
 export class Service {
@@ -58,5 +60,10 @@ export class Service {
   @JoinColumn({ name: 'hub_id' })
   hub: Hub;
 
-  // I may add order item, cart_item, discount item
+  // I may add order item,, discount item
+
+  @OneToMany(() => CartService, (cartService) => cartService.service, {
+    cascade: true,
+  })
+  cart_services: CartService[];
 }

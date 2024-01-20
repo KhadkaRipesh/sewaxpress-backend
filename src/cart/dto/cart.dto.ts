@@ -24,3 +24,11 @@ export class UpdateCartDto {
   @MaxLength(255)
   booking_address: string;
 }
+
+export class UpdateServiceToCartDto {
+  @ApiPropertyOptional({ example: 'Any concerns to share..' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  note: string;
+}

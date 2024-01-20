@@ -1,6 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { AddServiceToCartDto } from './dto/cart.dto';
+import {
+  AddServiceToCartDto,
+  UpdateCartDto,
+  UpdateServiceToCartDto,
+} from './dto/cart.dto';
 import { Service } from 'src/services/entities/service.entity';
 import { Cart, PaymentStatus } from './entities/cart.entity';
 import { CartService as CartItem } from './entities/cart-service.entity';
@@ -144,5 +148,92 @@ export class CartService {
 
       return this.getCart(customer_id);
     }
+  }
+
+  // ----Payement-----
+  async makePayment(customer_id: string) {
+    const cart = await this.dataSource
+      .getRepository(Cart)
+      .findOne({ where: { customer_id: customer_id } });
+
+    if (!cart) throw new BadRequestException('User doesnot has any carts.');
+
+    // Khalti setup
+    // update payement id
+    await this.dataSource
+      .getRepository(Cart)
+      .update(
+        { id: cart.id },
+        { payment_id: 'b2334717-2b38-40fb-b072-11622a161df1' },
+      );
+  }
+
+  // Update Service of cart
+  async updateServiceOnCart(
+    customer_id: string,
+    service_id: string,
+    payload: UpdateServiceToCartDto,
+  ) {
+    const service = await this.dataSource
+      .getRepository(Cart)
+      .findOne({ where: { customer_id, cart_services: { service_id } } });
+
+    if (!service) throw new BadRequestException('Service does not exist.');
+
+    await this.dataSource.getRepository(CartItem).save({
+      id: service.cart_services[0].id,
+      note: payload.note,
+    });
+
+    return await this.getCart(customer_id);
+  }
+
+  // Update Cart
+  async updateCart(
+    customer_id: string,
+    cart_id: string,
+    payload: UpdateCartDto,
+  ) {
+    const cart = await this.dataSource.getRepository(Cart).findOne({
+      where: { id: cart_id, customer_id },
+      relations: { hub: true },
+    });
+    if (!cart) throw new BadRequestException('Cannot found cart.');
+
+    await this.dataSource
+      .getRepository(Cart)
+      .update({ id: cart_id }, { ...payload });
+    return await this.getCart(customer_id);
+  }
+
+  // Delete cart service--------
+  async deleteServiceFromCart(customer_id: string, service_id: string) {
+    const service = await this.dataSource
+      .getRepository(Cart)
+      .findOne({ where: { customer_id, cart_services: { service_id } } });
+    if (service)
+      throw new BadRequestException('Services does not exist on cart.');
+
+    await this.dataSource
+      .getRepository(CartItem)
+      .delete({ id: service.cart_services[0].id });
+
+    // if no cart remove hub from cart too
+    if (service.cart_services.length === 0) {
+      await this.dataSource
+        .getRepository(Cart)
+        .update({ id: service.id }, { hub_id: null });
+    }
+    return await this.getCart(customer_id);
+  }
+
+  // delete cart
+  async deleteCart(customer_id: string) {
+    const cart = await this.dataSource
+      .getRepository(Cart)
+      .findOne({ where: { customer_id } });
+    if (!cart) throw new BadRequestException('Cart not found.');
+    await this.dataSource.getRepository(Cart).delete({ id: cart.id });
+    return { message: 'Cart deleted successfully.' };
   }
 }

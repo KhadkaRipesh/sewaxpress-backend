@@ -13,6 +13,7 @@ import { THubTiming } from 'src/@types/hub.t';
 import { User } from 'src/users/entities/user.entity';
 import { HubReview } from './hub-review.entity';
 import { Service } from 'src/services/entities/service.entity';
+import { Cart } from 'src/cart/entities/cart.entity';
 
 @Entity({ name: 'hub' })
 export class Hub {
@@ -77,4 +78,7 @@ export class Hub {
     cascade: true,
   })
   services: Service[];
+
+  @OneToMany(() => Cart, (cart) => cart.hub, { cascade: true })
+  carts: Cart[];
 }

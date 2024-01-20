@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CartService } from './cart-service.entity';
+import { Hub } from 'src/hub/entities/hub.entity';
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
@@ -23,17 +24,17 @@ export class Cart {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   customer_id: string;
   @ManyToOne(() => User, (user) => user.carts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customer_id' })
   customer: User;
 
-  @Column()
+  @Column({ nullable: true })
   hub_id: string;
-  @ManyToOne(() => User, (user) => user.carts, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Hub, (hub) => hub.carts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'hub_id' })
-  hub: User;
+  hub: Hub;
 
   //   should add bargain on  here
 
@@ -49,5 +50,5 @@ export class Cart {
   @OneToMany(() => CartService, (cartservice) => cartservice.cart, {
     cascade: true,
   })
-  cart_services: CartService;
+  cart_services: CartService[];
 }

@@ -16,6 +16,7 @@ export interface errorResponse {
 
 export enum SuccessMessage {
   CREATE = '%s created successfully.',
+  ADD = '%s added successfully.',
   FETCH = '%s fetched successfully',
   UPDATE = '%s updated successfully',
   DELETE = '%s deleted successfully',

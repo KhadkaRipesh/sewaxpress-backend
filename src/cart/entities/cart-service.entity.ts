@@ -26,7 +26,7 @@ export class CartService {
 
   @Column()
   cart_id: string;
-  @ManyToOne(() => Service, (service) => service.cart_services, {
+  @ManyToOne(() => Cart, (cart) => cart.cart_services, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'cart_id' })

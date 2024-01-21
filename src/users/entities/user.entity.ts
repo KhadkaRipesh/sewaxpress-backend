@@ -1,3 +1,4 @@
+import { Book } from 'src/book/entities/book.entity';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { HubReview } from 'src/hub/entities/hub-review.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
@@ -82,4 +83,7 @@ export class User {
 
   @OneToMany(() => Cart, (cart) => cart.customer, { cascade: true })
   carts: Cart[];
+
+  @OneToMany(() => Book, (book) => book.customer, { cascade: true })
+  bookings: Book[];
 }

@@ -42,9 +42,6 @@ export class Cart {
   payment_status: PaymentStatus;
 
   @Column({ nullable: true })
-  booking_address: string;
-
-  @Column({ nullable: true })
   payment_id: string;
 
   @OneToMany(() => CartService, (cartservice) => cartservice.cart, {

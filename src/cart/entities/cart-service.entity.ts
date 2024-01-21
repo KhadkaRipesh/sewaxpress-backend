@@ -31,10 +31,4 @@ export class CartService {
   })
   @JoinColumn({ name: 'cart_id' })
   cart: Cart;
-  //   @Column({ type: 'timestamp' })
-  //   bookiing_date: Date;
-
-  //   @ApiProperty({ example: '2023-07-20' })
-  //   @IsDateString()
-  //   submission_deadline: Date;
 }

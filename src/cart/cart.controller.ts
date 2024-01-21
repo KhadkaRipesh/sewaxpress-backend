@@ -12,7 +12,7 @@ import {
 import { CartService } from './cart.service';
 import { ResponseMessage } from 'src/@decoraters/response.decorater';
 import { SuccessMessage } from 'src/@utils';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
@@ -20,6 +20,7 @@ import { UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { AddServiceToCartDto, UpdateServiceToCartDto } from './dto/cart.dto';
 
+@ApiTags('Cart')
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}

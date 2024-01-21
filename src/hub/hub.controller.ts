@@ -32,7 +32,7 @@ import { SuccessMessage } from 'src/@utils';
 import { CreateHubReviewDto } from './dto/hub-review.dto';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
 
-@ApiTags('service hub')
+@ApiTags('Service hub')
 @Controller('hub')
 export class HubController {
   constructor(private readonly hubService: HubService) {}

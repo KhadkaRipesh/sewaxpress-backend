@@ -13,6 +13,7 @@ import { PreferencesModule } from './preferences/preferences.module';
 import { ServiceModule } from './services/service.module';
 import { HubModule } from './hub/hub.module';
 import { BookModule } from './book/book.module';
+import { IncomeTaxModule } from './income-tax/income-tax.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { BookModule } from './book/book.module';
     PreferencesModule,
     HubModule,
     BookModule,
+    IncomeTaxModule,
   ],
   controllers: [AppController],
   providers: [

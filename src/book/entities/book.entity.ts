@@ -37,4 +37,46 @@ export class Book {
 
   @Column({ type: 'varchar', length: 5, select: false })
   book_otp: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  sub_total: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  discount_amount: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  price_after_discount: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  tax_amount: number;
+
+  @Column({ type: 'boolean', default: false })
+  mark_as_received: boolean;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  price_after_tax: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  grand_total: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    select: false,
+  })
+  serviceProvider_earning: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    select: false,
+  })
+  vendor_commission: number;
+
+  @Column({ type: 'boolean', default: false, select: false })
+  paid_to_serviceProvider: boolean;
 }

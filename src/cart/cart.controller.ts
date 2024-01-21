@@ -18,11 +18,7 @@ import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
-import {
-  AddServiceToCartDto,
-  UpdateCartDto,
-  UpdateServiceToCartDto,
-} from './dto/cart.dto';
+import { AddServiceToCartDto, UpdateServiceToCartDto } from './dto/cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -59,18 +55,18 @@ export class CartController {
   }
 
   // Update Cart
-  @Patch(':cart_id')
-  @ResponseMessage(SuccessMessage.UPDATE, 'Cart')
-  @ApiOperation({ summary: 'Update Cart', description: `${UserRole.CUSTOMER}` })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
-  updateCart(
-    @GetUser('id') customer_id: string,
-    @Body() payload: UpdateCartDto,
-    @Param('cart_id', new ParseUUIDPipe()) cart_id: string,
-  ) {
-    return this.cartService.updateCart(customer_id, cart_id, payload);
-  }
+  // @Patch(':cart_id')
+  // @ResponseMessage(SuccessMessage.UPDATE, 'Cart')
+  // @ApiOperation({ summary: 'Update Cart', description: `${UserRole.CUSTOMER}` })
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.CUSTOMER)
+  // updateCart(
+  //   @GetUser('id') customer_id: string,
+  //   @Body() payload: UpdateCartDto,
+  //   @Param('cart_id', new ParseUUIDPipe()) cart_id: string,
+  // ) {
+  //   return this.cartService.updateCart(customer_id, cart_id, payload);
+  // }
 
   // Update service on  Cart
   @Patch('service/:service_id')

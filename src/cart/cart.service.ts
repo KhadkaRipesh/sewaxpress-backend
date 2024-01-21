@@ -1,10 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import {
-  AddServiceToCartDto,
-  UpdateCartDto,
-  UpdateServiceToCartDto,
-} from './dto/cart.dto';
+import { AddServiceToCartDto, UpdateServiceToCartDto } from './dto/cart.dto';
 import { Service } from 'src/services/entities/service.entity';
 import { Cart, PaymentStatus } from './entities/cart.entity';
 import { CartService as CartItem } from './entities/cart-service.entity';
@@ -189,22 +185,22 @@ export class CartService {
   }
 
   // Update Cart
-  async updateCart(
-    customer_id: string,
-    cart_id: string,
-    payload: UpdateCartDto,
-  ) {
-    const cart = await this.dataSource.getRepository(Cart).findOne({
-      where: { id: cart_id, customer_id },
-      relations: { hub: true },
-    });
-    if (!cart) throw new BadRequestException('Cannot found cart.');
+  // async updateCart(
+  //   customer_id: string,
+  //   cart_id: string,
+  //   payload: UpdateCartDto,
+  // ) {
+  //   const cart = await this.dataSource.getRepository(Cart).findOne({
+  //     where: { id: cart_id, customer_id },
+  //     relations: { hub: true },
+  //   });
+  //   if (!cart) throw new BadRequestException('Cannot found cart.');
 
-    await this.dataSource
-      .getRepository(Cart)
-      .update({ id: cart_id }, { ...payload });
-    return await this.getCart(customer_id);
-  }
+  //   await this.dataSource
+  //     .getRepository(Cart)
+  //     .update({ id: cart_id }, { ...payload });
+  //   return await this.getCart(customer_id);
+  // }
 
   // Delete cart service--------
   async deleteServiceFromCart(customer_id: string, service_id: string) {

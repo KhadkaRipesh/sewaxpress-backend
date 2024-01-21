@@ -12,6 +12,7 @@ import { CartModule } from './cart/cart.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { ServiceModule } from './services/service.module';
 import { HubModule } from './hub/hub.module';
+import { BookModule } from './book/book.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { HubModule } from './hub/hub.module';
     CartModule,
     PreferencesModule,
     HubModule,
+    BookModule,
   ],
   controllers: [AppController],
   providers: [

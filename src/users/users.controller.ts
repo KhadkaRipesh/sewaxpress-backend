@@ -9,7 +9,9 @@ import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
 import { UserFilterDTO } from './dto/user.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('User')
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}

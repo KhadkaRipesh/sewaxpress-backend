@@ -19,7 +19,9 @@ import { RolesGuard } from 'src/@guards/roles.guard';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
 import { CategoryService } from './category.service';
 import { CreateCategoryDTO, UpdateCategoryDTO } from './dto/category.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Category')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

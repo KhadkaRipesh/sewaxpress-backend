@@ -4,6 +4,7 @@ import { AddServiceToCartDto, UpdateServiceToCartDto } from './dto/cart.dto';
 import { Service } from 'src/services/entities/service.entity';
 import { Cart, PaymentStatus } from './entities/cart.entity';
 import { CartService as CartItem } from './entities/cart-service.entity';
+import { IncomeAndTax } from 'src/income-tax/entities/income-tax.entity';
 
 @Injectable()
 export class CartService {
@@ -83,10 +84,23 @@ export class CartService {
     );
 
     // Calculate tax from here
+    let total_after_tax = 0;
+    const tax = await this.dataSource.getRepository(IncomeAndTax).find();
+
+    if (tax) {
+      total_after_tax =
+        total_after_discount + (tax[0].tax / 100) * total_after_discount;
+    }
+    cart['total_after_tax'] = Number(total_after_tax.toFixed(2));
+
+    //Calculate tax amount
+    cart['tax_amount'] = Number(
+      (total_after_tax - total_after_discount).toFixed(2),
+    );
 
     // Calculate grand total
     let grand_total = 0;
-    grand_total = total_after_discount;
+    grand_total = total_after_tax;
     cart['grand_total'] = Number(grand_total.toFixed(2));
 
     return cart;

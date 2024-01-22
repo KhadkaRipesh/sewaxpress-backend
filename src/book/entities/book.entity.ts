@@ -5,9 +5,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BookStatus } from '../dto/book.dto';
+import { BookedService } from './booked-entity';
 
 @Entity({ name: 'book' })
 export class Book {
@@ -79,4 +81,9 @@ export class Book {
 
   @Column({ type: 'boolean', default: false, select: false })
   paid_to_serviceProvider: boolean;
+
+  @OneToMany(() => BookedService, (bookedService) => bookedService.book, {
+    cascade: true,
+  })
+  booked_services: BookedService[];
 }

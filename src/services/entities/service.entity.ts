@@ -12,6 +12,7 @@ import {
 import { Category } from './category.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { CartService } from 'src/cart/entities/cart-service.entity';
+import { BookedService } from 'src/book/entities/booked-entity';
 
 @Entity({ name: 'services' })
 export class Service {
@@ -66,4 +67,9 @@ export class Service {
     cascade: true,
   })
   cart_services: CartService[];
+
+  @OneToMany(() => BookedService, (bookedService) => bookedService.service, {
+    cascade: true,
+  })
+  booked_services: BookedService[];
 }

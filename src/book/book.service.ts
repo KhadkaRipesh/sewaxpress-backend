@@ -6,6 +6,7 @@ import { CartService } from 'src/cart/cart.service';
 import { generateOTP } from 'src/@helpers/otp';
 import { Book } from './entities/book.entity';
 import { CartService as CartItems } from 'src/cart/entities/cart-service.entity';
+import { BookedService } from './entities/booked-entity';
 
 @Injectable()
 export class BookService {
@@ -61,11 +62,14 @@ export class BookService {
       });
 
       //   Save the ordered service
-
       for (let i = 0; i < cart.cart_services.length; i++) {
-        let price = cart.cart_services[i].service.price;
-
-        // save ordered services
+        // save each ordered services
+        await queryRunner.manager.getRepository(BookedService).save({
+          booked_id: book.id,
+          service_id: cart.cart_services[i].service_id,
+          price: cart.cart_services[i].service.price,
+          note: cart.cart_services[i].note,
+        });
       }
 
       //   delete cart and cart services

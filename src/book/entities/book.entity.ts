@@ -35,7 +35,7 @@ export class Book {
   @Column({ type: 'enum', enum: BookStatus, default: BookStatus.bookingPlaced })
   book_status: BookStatus;
 
-  @Column({ type: 'varchar', length: 5, select: false })
+  @Column({ type: 'varchar', length: 6, select: false })
   book_otp: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })

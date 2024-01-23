@@ -7,6 +7,8 @@ import { generateOTP } from 'src/@helpers/otp';
 import { Book } from './entities/book.entity';
 import { CartService as CartItems } from 'src/cart/entities/cart-service.entity';
 import { BookedService } from './entities/booked-entity';
+import { sendMail } from 'src/@helpers/mail';
+import { bookingMailTemplate } from 'src/@utils/mail-template';
 
 @Injectable()
 export class BookService {
@@ -84,6 +86,32 @@ export class BookService {
       });
 
       //   Prepare for email
+      const serviceNames = cart.cart_services.map(
+        (service) => service.service.name,
+      );
+      const serviceList = serviceNames.join(', ');
+      const categoryNames = cart.cart_services.map(
+        (service) => service.service.category.category_name,
+      );
+      const categoryList = categoryNames.join(', ');
+
+      const email = {
+        title: 'Booking Confirmation',
+        name: cart.customer.full_name,
+        service_name: serviceList,
+        service_category: categoryList,
+        cost: book.grand_total,
+        email: cart.customer.email,
+        phone: cart.customer.phone_number,
+        address: book.booking_address,
+        date: book.booking_date,
+      };
+
+      sendMail({
+        to: cart.customer.email,
+        subject: 'Booking Confirmation',
+        html: bookingMailTemplate(email),
+      });
 
       await queryRunner.commitTransaction();
     } catch (error) {

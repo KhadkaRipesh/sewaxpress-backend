@@ -3,7 +3,7 @@ export interface PaginateResponse {
   currentpage: number | null;
   nextPage: number | null;
   lastPage: number;
-  totaCount: number;
+  totalCount: number;
   result: any[];
 }
 export const paginateResponse = (
@@ -16,7 +16,7 @@ export const paginateResponse = (
   const nextPage = page < lastPage ? +page + 1 : null;
   const prevPage = page > 1 ? page - 1 : null;
   return {
-    totaCount: total,
+    totalCount: total,
     prevPage,
     currentpage: +page,
     nextPage,

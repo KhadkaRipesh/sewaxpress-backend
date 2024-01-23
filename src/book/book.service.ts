@@ -7,6 +7,8 @@ import { generateOTP } from 'src/@helpers/otp';
 import { Book } from './entities/book.entity';
 import { CartService as CartItems } from 'src/cart/entities/cart-service.entity';
 import { BookedService } from './entities/booked-entity';
+import { sendMail } from 'src/@helpers/mail';
+import { bookingMailTemplate } from 'src/@utils/mail-template';
 
 @Injectable()
 export class BookService {
@@ -32,6 +34,7 @@ export class BookService {
         .leftJoinAndSelect('cart.hub', 'hub')
         .leftJoin('cart.cart_services', 'cart_services')
         .leftJoin('cart_services.service', 'service')
+        .leftJoin('service.category', 'category')
         .where('customer.id = :customer_id', { customer_id })
         .select([
           'cart',
@@ -40,9 +43,15 @@ export class BookService {
           'cart_services.service_id',
           'cart_services.note',
           'service',
+          'customer',
+          'category',
         ])
         .getOne();
 
+      if (!cart)
+        throw new BadRequestException(
+          'There is no services on cart to book service.',
+        );
       const cartDetails = await this.cartService.getCart(customer_id);
 
       const booking_otp = await generateOTP(6);
@@ -83,9 +92,37 @@ export class BookService {
         id: cart.id,
       });
 
+      console.log('Reached here');
       //   Prepare for email
+      const serviceNames = cart.cart_services.map(
+        (service) => service.service.name,
+      );
+      const serviceList = serviceNames.join(', ');
+      const categoryNames = cart.cart_services.map(
+        (service) => service.service.category.category_name,
+      );
+      const categoryList = categoryNames.join(', ');
+
+      const email = {
+        title: 'Booking Confirmation',
+        name: cart.customer.full_name,
+        service_name: serviceList,
+        service_category: categoryList,
+        cost: book.grand_total,
+        email: cart.customer.email,
+        phone: cart.customer.phone_number,
+        address: book.booking_address,
+        date: book.booking_date,
+      };
+
+      sendMail({
+        to: cart.customer.email,
+        subject: 'Booking Confirmation',
+        html: bookingMailTemplate(email),
+      });
 
       await queryRunner.commitTransaction();
+      return book;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(error.message);

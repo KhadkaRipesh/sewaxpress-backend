@@ -32,7 +32,7 @@ export class BookController {
   @Roles(UserRole.CUSTOMER)
   createBooking(
     @GetUser('id') customer_id: string,
-    @Param('id', new ParseUUIDPipe()) hub_id: string,
+    @Param('hub_id', new ParseUUIDPipe()) hub_id: string,
     @Body() payload: CreateServiceBookDto,
   ) {
     return this.bookService.createBooking(customer_id, hub_id, payload);

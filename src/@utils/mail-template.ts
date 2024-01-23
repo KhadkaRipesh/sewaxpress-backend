@@ -7,13 +7,13 @@ interface IEmailData {
 interface IBookingData {
   title: string;
   name: string;
-  service_name: string;
-  service_category: string;
-  cost: string;
+  service_name: any;
+  service_category: any;
+  cost: number;
   email: string;
   phone: string;
   address: string;
-  date: string;
+  date: Date;
 }
 
 export function defaultMailTemplate(data: IEmailData) {

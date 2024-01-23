@@ -38,6 +38,7 @@ export class BookService {
         .createQueryBuilder('cart')
         .leftJoin('cart.customer', 'customer')
         .leftJoinAndSelect('cart.hub', 'hub')
+        .leftJoinAndSelect('hub.user', 'user')
         .leftJoin('cart.cart_services', 'cart_services')
         .leftJoin('cart_services.service', 'service')
         .leftJoin('service.category', 'category')
@@ -48,6 +49,7 @@ export class BookService {
           'cart_services.id',
           'cart_services.service_id',
           'cart_services.note',
+          'user',
           'service',
           'customer',
           'category',
@@ -98,7 +100,6 @@ export class BookService {
         id: cart.id,
       });
 
-      console.log('Reached here');
       //   Prepare for email
       const serviceNames = cart.cart_services.map(
         (service) => service.service.name,
@@ -109,22 +110,48 @@ export class BookService {
       );
       const categoryList = categoryNames.join(', ');
 
-      const email = {
-        title: 'Booking Confirmation',
-        name: cart.customer.full_name,
-        service_name: serviceList,
-        service_category: categoryList,
-        cost: book.grand_total,
-        email: cart.customer.email,
-        phone: cart.customer.phone_number,
-        address: book.booking_address,
-        date: book.booking_date,
-      };
+      const email = [
+        // for customer
+        {
+          title: 'Booking Confirmation',
+          message: 'Thank you for booking service using sewaXpress.',
+          name: cart.customer.full_name,
+          service_name: serviceList,
+          service_category: categoryList,
+          cost: book.grand_total,
+          email: cart.customer.email,
+          phone: cart.customer.phone_number,
+          address: book.booking_address,
+          date: book.booking_date,
+        },
 
+        // for service provider
+        {
+          title: 'Booking Confirmation',
+          message: 'The service of your hub has been booked.',
+          name: cart.hub.user.full_name,
+          service_name: serviceList,
+          service_category: categoryList,
+          cost: book.grand_total,
+          email: cart.customer.email,
+          phone: cart.customer.phone_number,
+          address: book.booking_address,
+          date: book.booking_date,
+        },
+      ];
+
+      // send email to customer
       sendMail({
         to: cart.customer.email,
         subject: 'Booking Confirmation',
-        html: bookingMailTemplate(email),
+        html: bookingMailTemplate(email[0]),
+      });
+
+      // send email to service provider
+      sendMail({
+        to: cart.hub.user.email,
+        subject: 'Booking Confirmation',
+        html: bookingMailTemplate(email[1]),
       });
 
       await queryRunner.commitTransaction();

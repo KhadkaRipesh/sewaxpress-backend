@@ -5,6 +5,7 @@ import { Service } from 'src/services/entities/service.entity';
 import { Cart, PaymentStatus } from './entities/cart.entity';
 import { CartService as CartItem } from './entities/cart-service.entity';
 import { IncomeAndTax } from 'src/income-tax/entities/income-tax.entity';
+import { Hub } from 'src/hub/entities/hub.entity';
 
 @Injectable()
 export class CartService {
@@ -23,7 +24,6 @@ export class CartService {
         'cart.id',
         'cart.customer_id',
         'cart.payment_status',
-        'cart.booking_address',
         'cart.payment_id',
         'hub.id',
         'hub.name',
@@ -87,9 +87,12 @@ export class CartService {
     let total_after_tax = 0;
     const tax = await this.dataSource.getRepository(IncomeAndTax).find();
 
-    if (tax) {
+    if (tax.length > 0) {
+      console.log(tax);
       total_after_tax =
         total_after_discount + (tax[0].tax / 100) * total_after_discount;
+    } else {
+      total_after_tax = total_after_discount;
     }
     cart['total_after_tax'] = Number(total_after_tax.toFixed(2));
 
@@ -112,6 +115,13 @@ export class CartService {
       .findOne({ where: { id: payload.service_id } });
 
     if (!service) throw new BadRequestException('Service Not Found.');
+
+    const hub = await this.dataSource
+      .getRepository(Hub)
+      .findOne({ where: { id: payload.hub_id } });
+
+    if (!hub) throw new BadRequestException('Hub not found for this service');
+
     if (!service.is_available)
       throw new BadRequestException('Service is not available for now.');
 

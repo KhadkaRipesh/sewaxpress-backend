@@ -34,6 +34,7 @@ export class BookService {
         .leftJoinAndSelect('cart.hub', 'hub')
         .leftJoin('cart.cart_services', 'cart_services')
         .leftJoin('cart_services.service', 'service')
+        .leftJoin('service.category', 'category')
         .where('customer.id = :customer_id', { customer_id })
         .select([
           'cart',
@@ -42,9 +43,15 @@ export class BookService {
           'cart_services.service_id',
           'cart_services.note',
           'service',
+          'customer',
+          'category',
         ])
         .getOne();
 
+      if (!cart)
+        throw new BadRequestException(
+          'There is no services on cart to book service.',
+        );
       const cartDetails = await this.cartService.getCart(customer_id);
 
       const booking_otp = await generateOTP(6);
@@ -85,6 +92,7 @@ export class BookService {
         id: cart.id,
       });
 
+      console.log('Reached here');
       //   Prepare for email
       const serviceNames = cart.cart_services.map(
         (service) => service.service.name,
@@ -114,6 +122,7 @@ export class BookService {
       });
 
       await queryRunner.commitTransaction();
+      return book;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(error.message);

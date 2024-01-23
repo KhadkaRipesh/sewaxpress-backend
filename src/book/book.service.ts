@@ -1,6 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CreateServiceBookDto } from './dto/book.dto';
+import {
+  BookingFilterDto,
+  CreateServiceBookDto,
+  FilterByDateType,
+} from './dto/book.dto';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { CartService } from 'src/cart/cart.service';
 import { generateOTP } from 'src/@helpers/otp';
@@ -9,6 +13,8 @@ import { CartService as CartItems } from 'src/cart/entities/cart-service.entity'
 import { BookedService } from './entities/booked-entity';
 import { sendMail } from 'src/@helpers/mail';
 import { bookingMailTemplate } from 'src/@utils/mail-template';
+import { applyDateFilter } from 'src/@filter/dateFilter';
+import { paginateResponse } from 'src/@helpers/pagination';
 
 @Injectable()
 export class BookService {
@@ -129,5 +135,44 @@ export class BookService {
     } finally {
       queryRunner.release;
     }
+  }
+
+  // Get All booking
+  async getAllBooking(service_provider_id: string, query: BookingFilterDto) {
+    const page = query?.page || 1;
+    const take = query?.limit || 10;
+    const skip = (page - 1) * take;
+
+    //Validate custom filter date
+    if (query && query.date === FilterByDateType.CUSTOM) {
+      if (!query.start_date || !query.end_date) {
+        return { message: 'Please provide start date and end date.' };
+      }
+    }
+
+    let sql = this.dataSource
+      .getRepository(Book)
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.hub', 'hub')
+      .where('hub.user_id =: service_provider_id', { service_provider_id })
+      .leftJoinAndSelect('book.customer', 'customer')
+      .leftJoinAndSelect('book.booked_services', 'booked_services')
+      .take(take)
+      .skip(skip)
+      .orderBy('book.booking_date', 'DESC');
+
+    if (query) {
+      if (query.book_status) {
+        sql = sql.where('book.book_status =:book_status', {
+          book_status: query.book_status,
+        });
+      }
+      if (query.date) {
+        sql = applyDateFilter(sql, query, 'book', 'booking_date');
+      }
+    }
+    const result = await sql.getManyAndCount();
+
+    return paginateResponse(result, page, take);
   }
 }

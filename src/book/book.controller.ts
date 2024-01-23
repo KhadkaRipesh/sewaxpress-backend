@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { BookService } from './book.service';
@@ -15,7 +17,7 @@ import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { ApiOperation } from '@nestjs/swagger';
-import { CreateServiceBookDto } from './dto/book.dto';
+import { BookingFilterDto, CreateServiceBookDto } from './dto/book.dto';
 
 @Controller('book')
 export class BookController {
@@ -36,5 +38,21 @@ export class BookController {
     @Body() payload: CreateServiceBookDto,
   ) {
     return this.bookService.createBooking(customer_id, hub_id, payload);
+  }
+
+  // Get All bookings of hub
+  @Get()
+  @ResponseMessage(SuccessMessage.FETCH, 'Bookings')
+  @ApiOperation({
+    summary: 'Get All Orders Of Shop',
+    description: `${UserRole.SERVICE_PROVIDER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SERVICE_PROVIDER)
+  getAllBookings(
+    @GetUser('id') service_provider_id: string,
+    @Query() query: BookingFilterDto,
+  ) {
+    return this.bookService.getAllBooking(service_provider_id, query);
   }
 }

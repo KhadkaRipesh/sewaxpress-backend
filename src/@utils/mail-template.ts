@@ -6,6 +6,7 @@ interface IEmailData {
 
 interface IBookingData {
   title: string;
+  message: string;
   name: string;
   service_name: any;
   service_category: any;
@@ -150,7 +151,7 @@ export function bookingMailTemplate(data: IBookingData) {
       <div class="container">
         <h1>${data.title}</h1>
         <p>Dear <span class="bold">${data.name}</span>,</p>
-        <p>Thank you for booking service using sewaXpress.</p>
+        <p>${data.message}</p>
   
         <div class="details">
           The details of the booking is here:

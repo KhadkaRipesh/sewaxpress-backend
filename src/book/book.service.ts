@@ -154,11 +154,11 @@ export class BookService {
       .getRepository(Book)
       .createQueryBuilder('book')
       .leftJoinAndSelect('book.hub', 'hub')
-      .where('hub.user_id =: service_provider_id', { service_provider_id })
+      .where('hub.user_id =:service_provider_id', { service_provider_id })
       .leftJoinAndSelect('book.customer', 'customer')
       .leftJoinAndSelect('book.booked_services', 'booked_services')
-      .take(take)
       .skip(skip)
+      .take(take)
       .orderBy('book.booking_date', 'DESC');
 
     if (query) {

@@ -80,3 +80,11 @@ export class ChangeBookStatus {
   @IsOptional()
   cancelled_reason: string;
 }
+
+export class CancelBooking {
+  @ApiPropertyOptional({ example: 'Un availability' })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  cancelled_reason: string;
+}

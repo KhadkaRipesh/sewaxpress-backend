@@ -20,6 +20,7 @@ import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { ApiOperation } from '@nestjs/swagger';
 import {
   BookingFilterDto,
+  CancelBooking,
   ChangeBookStatus,
   CreateServiceBookDto,
 } from './dto/book.dto';
@@ -160,5 +161,22 @@ export class BookController {
       service_provider_id,
       book_id,
     );
+  }
+
+  // To cancel booking by Customer
+  @Post('cancel/:book_id')
+  @ResponseMessage(SuccessMessage.CANCEL, 'Booking')
+  @ApiOperation({
+    summary: 'Cancel Booking',
+    description: `${UserRole.CUSTOMER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  cancelBooking(
+    @GetUser('id') customer_id: string,
+    @Param('book_id', new ParseUUIDPipe()) book_id: string,
+    @Body() payload: CancelBooking,
+  ) {
+    return this.bookService.cancelBooking(customer_id, book_id, payload);
   }
 }

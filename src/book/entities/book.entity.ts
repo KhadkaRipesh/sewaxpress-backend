@@ -28,6 +28,9 @@ export class Book {
   @JoinColumn({ name: 'hub_id' })
   hub: Hub;
 
+  @Column({ nullable: true })
+  cancelled_reason: string;
+
   @Column({ type: 'timestamp' })
   booking_date: Date;
 

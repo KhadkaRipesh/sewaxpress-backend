@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
   IsEnum,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -13,6 +14,7 @@ export enum BookStatus {
   bookingProcessing = 'BOOKING_PROCESSING',
   bookingCompleted = 'BOOKING_COMPLETED',
   bookingCancelled = 'BOOKING_CANCELLED',
+  readyForService = 'READYFORSERVICE',
 }
 export enum FilterByDateType {
   TODAY = 'today',
@@ -61,4 +63,20 @@ export class BookingFilterDto extends PaginationDto {
   @IsDateString()
   @IsOptional()
   end_date: string;
+}
+
+export class ChangeBookStatus {
+  @ApiProperty({ type: 'enum', example: BookStatus.bookingPlaced })
+  @IsIn([
+    BookStatus.bookingCancelled,
+    BookStatus.bookingProcessing,
+    BookStatus.readyForService,
+  ])
+  book_status: BookStatus;
+
+  @ApiPropertyOptional({ example: 'Un availability' })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  cancelled_reason: string;
 }

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import {
   BookingFilterDto,
+  ChangeBookStatus,
   CreateServiceBookDto,
   FilterByDateType,
 } from './dto/book.dto';
@@ -15,6 +16,7 @@ import { sendMail } from 'src/@helpers/mail';
 import { bookingMailTemplate } from 'src/@utils/mail-template';
 import { applyDateFilter } from 'src/@filter/dateFilter';
 import { paginateResponse } from 'src/@helpers/pagination';
+import { Hub } from 'src/hub/entities/hub.entity';
 
 @Injectable()
 export class BookService {
@@ -201,5 +203,229 @@ export class BookService {
     const result = await sql.getManyAndCount();
 
     return paginateResponse(result, page, take);
+  }
+
+  // Track booking
+  async trackBooking(customer_id: string) {
+    const booking = await this.dataSource.getRepository(Book).find({
+      where: { customer_id },
+      relations: {
+        hub: true,
+        booked_services: { service: true },
+        customer: true,
+      },
+      select: {
+        id: true,
+        book_status: true,
+        booking_date: true,
+        booking_address: true,
+        book_otp: true,
+        customer: { full_name: true, email: true },
+        hub: { name: true, avatar: true, address: true },
+        booked_services: {
+          id: true,
+          service_id: true,
+          service: { name: true },
+          note: true,
+          price: true,
+        },
+        sub_total: true,
+        grand_total: true,
+      },
+    });
+    if (!booking) throw new BadRequestException('Booking not found.');
+    return booking;
+  }
+
+  // Get My All bookings (CUSTOMER)
+
+  async getAllMyBookings(customer_id: string, query: BookingFilterDto) {
+    const page = query?.page || 1;
+    const take = query?.limit || 10;
+    const skip = (page - 1) * take;
+
+    //Validate custom filter date
+    if (query && query.date === FilterByDateType.CUSTOM) {
+      if (!query.start_date || !query.end_date) {
+        return { message: 'Please provide start date and end date.' };
+      }
+    }
+
+    let sql = this.dataSource
+      .getRepository(Book)
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.customer', 'customer')
+      .where('customer.id =:customer_id', { customer_id })
+      .leftJoinAndSelect('book.hub', 'hub')
+      .leftJoinAndSelect('book.booked_services', 'booked_services')
+      .leftJoinAndSelect('booked_services.service', 'service')
+      .select([
+        'customer_id',
+        'customer.full_name',
+        'customer.email',
+        'book.id',
+        'book.booking_address',
+        'book.booking_date',
+        'book.book_status',
+        'book.book_otp',
+        'hub.name',
+        'hub.address',
+        'hub.avatar',
+        'service.id',
+        'service.name',
+        'booked_services.id',
+        'booked_services.note',
+        'booked_services.price',
+        'book.sub_total',
+        'book.grand_total',
+      ])
+      .skip(skip)
+      .take(take)
+      .orderBy('book.booking_date', 'DESC');
+
+    if (query) {
+      if (query.book_status) {
+        sql = sql.where('book.book_status =:book_status', {
+          book_status: query.book_status,
+        });
+      }
+      if (query.date) {
+        sql = applyDateFilter(sql, query, 'book', 'booking_date');
+      }
+    }
+    const result = await sql.getManyAndCount();
+    return paginateResponse(result, page, take);
+  }
+
+  async changeBookStatus(
+    service_provider_id: string,
+    book_id: string,
+    payload: ChangeBookStatus,
+  ) {
+    // find hub associated with service provider
+    const hub = await this.dataSource
+      .getRepository(Hub)
+      .findOne({ where: { user_id: service_provider_id } });
+    if (!hub) throw new BadRequestException('Hub not found.');
+
+    // find booking from book id and hub id
+    const book = await this.dataSource
+      .getRepository(Book)
+      .findOne({ where: { id: book_id, hub_id: hub.id } });
+    if (!book) throw new BadRequestException('There is no book for your hub.');
+
+    // Update the book status in the database
+    const updatedBook = await this.dataSource.getRepository(Book).save({
+      id: book_id,
+      book_status: payload.book_status,
+      cancelled_reason: payload.cancelled_reason
+        ? payload.cancelled_reason
+        : null,
+    });
+
+    // prepare for notification to notify customer
+
+    return `Booking ${updatedBook.book_status}`;
+  }
+
+  // Delete Booking - seller
+  async removeBooking(book_id: string, service_provider_id: string) {
+    const hub = await this.dataSource
+      .getRepository(Hub)
+      .findOne({ where: { user_id: service_provider_id } });
+
+    const book = await this.dataSource
+      .getRepository(Book)
+      .findOne({ where: { id: book_id, hub_id: hub.id } });
+
+    if (!book)
+      throw new BadRequestException(
+        'You are not authorized to delete booking.',
+      );
+
+    await this.dataSource.getRepository(Book).delete(book_id);
+
+    return { message: 'Booking deleted successfully.' };
+  }
+
+  // Get Booking details from Customer
+  async getCustomerBookingDetails(customer_id: string, book_id: string) {
+    const book = await this.dataSource
+      .getRepository(Book)
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.customer', 'customer')
+      .leftJoinAndSelect('book.hub', 'hub')
+      .leftJoinAndSelect('book.booked_services', 'booked_services')
+      .leftJoinAndSelect('booked_services.service', 'service')
+      .where('book.customer_id =:customer_id', { customer_id })
+      .andWhere('book.id =:book_id', { book_id })
+      .select([
+        'customer_id',
+        'customer.full_name',
+        'customer.email',
+        'book.id',
+        'book.booking_address',
+        'book.booking_date',
+        'book.book_status',
+        'book.book_otp',
+        'hub.name',
+        'hub.address',
+        'hub.avatar',
+        'service.id',
+        'service.name',
+        'service.estimated_time',
+        'booked_services.id',
+        'booked_services.note',
+        'booked_services.price',
+        'book.sub_total',
+        'book.grand_total',
+      ])
+      .getOne();
+
+    if (!book) throw new BadRequestException('Book not found.');
+
+    return book;
+  }
+
+  // Get Book details from Service Provider
+  async getServiceProviderBookingDetails(
+    service_provider_id: string,
+    book_id: string,
+  ) {
+    const book = await this.dataSource
+      .getRepository(Book)
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.customer', 'customer')
+      .leftJoinAndSelect('book.hub', 'hub')
+      .leftJoinAndSelect('book.booked_services', 'booked_services')
+      .leftJoinAndSelect('booked_services.service', 'service')
+      .where('hub.user_id =:service_provider_id', { service_provider_id })
+      .andWhere('book.id =:book_id', { book_id })
+      .select([
+        'customer_id',
+        'customer.full_name',
+        'customer.email',
+        'book.id',
+        'book.booking_address',
+        'book.booking_date',
+        'book.book_status',
+        'book.book_otp',
+        'hub.name',
+        'hub.address',
+        'hub.avatar',
+        'service.id',
+        'service.name',
+        'service.estimated_time',
+        'booked_services.id',
+        'booked_services.note',
+        'booked_services.price',
+        'book.sub_total',
+        'book.grand_total',
+      ])
+      .getOne();
+
+    if (!book) throw new BadRequestException('Book not found.');
+
+    return book;
   }
 }

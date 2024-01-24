@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import {
+  BookStatus,
   BookingFilterDto,
+  CancelBooking,
   ChangeBookStatus,
   CreateServiceBookDto,
   FilterByDateType,
@@ -427,5 +429,36 @@ export class BookService {
     if (!book) throw new BadRequestException('Book not found.');
 
     return book;
+  }
+
+  // Cancel Booking
+  async cancelBooking(
+    customer_id: string,
+    book_id: string,
+    payload: CancelBooking,
+  ) {
+    const book = await this.dataSource
+      .getRepository(Book)
+      .findOne({ where: { id: book_id, customer_id } });
+    if (!book) throw new BadRequestException('Unable to cancel.');
+
+    const bookStatus = book.book_status;
+    if (bookStatus !== BookStatus.bookingPlaced)
+      throw new BadRequestException(
+        `Book can't be cancelled. It's on status: ${book.book_status}`,
+      );
+
+    await this.dataSource.getRepository(Book).save({
+      id: book_id,
+      customer_id,
+      book_status: BookStatus.bookingCancelled,
+      cancelled_reason: payload.cancelled_reason
+        ? payload.cancelled_reason
+        : null,
+    });
+
+    // create notification for service provider
+
+    return true;
   }
 }

@@ -76,4 +76,16 @@ export class ChatController {
   sendMessage(@GetUser() user: User, @Body() payload: CreateChatDto) {
     return this.chatService.sendMessage(user, payload);
   }
+
+  //   DELETE ROOM
+  @Delete('chat/:chat_id')
+  @ResponseMessage(SuccessMessage.DELETE, 'Chat')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER)
+  deleteChat(
+    @GetUser() user: User,
+    @Param('chat_id', new ParseUUIDPipe()) chat_id: string,
+  ) {
+    return this.chatService.deleteChat(user, chat_id);
+  }
 }

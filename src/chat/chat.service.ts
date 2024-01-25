@@ -281,4 +281,27 @@ export class ChatService {
 
     return chat_row;
   }
+
+  // delete a chat
+  async deleteChat(user: User, chat_id: string) {
+    const chat = await this.dataSource.getRepository(Chat).findOne({
+      where: { id: chat_id },
+      relations: { sender: true },
+    });
+    if (!chat) {
+      return { message: 'Message not found.' };
+    }
+
+    if (chat.sender_id !== user.id) {
+      return { message: 'You are not authorized.' };
+    }
+
+    await this.dataSource.getRepository(Chat).delete({ id: chat_id });
+
+    // prepare for notification
+    return {
+      message: 'Message deleted successfully.',
+      room_id: chat.room_id,
+    };
+  }
 }

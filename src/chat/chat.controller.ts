@@ -1,10 +1,69 @@
-import { Controller } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ChatService } from './chat.service';
+import { ResponseMessage } from 'src/@decoraters/response.decorater';
+import { SuccessMessage } from 'src/@utils';
+import { JwtAuthGuard } from 'src/@guards/auth.guard';
+import { RolesGuard } from 'src/@guards/roles.guard';
+import { Roles } from 'src/@decoraters/getRole.decorater';
+import { User, UserRole } from 'src/users/entities/user.entity';
+import { GetUser } from 'src/@decoraters/getUser.decorater';
+import { CreateRoomDto } from './dto/room.dto';
 
 @ApiTags('Chat')
 @ApiBearerAuth('JWT-auth')
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
+
+  // CREATE ROOM-----------------------------------------
+  @Post('room')
+  @ResponseMessage(SuccessMessage.CREATE, 'Chat Room')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  createRoom(@GetUser() user: User, @Body() payload: CreateRoomDto) {
+    return this.chatService.createRoom(user, payload);
+  }
+
+  // GET ALL ROOM-----------------------------------------
+  @Get('room')
+  @ResponseMessage(SuccessMessage.FETCH, 'Chat Room')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER)
+  getAllRoom(@GetUser() user: User) {
+    return this.chatService.getMyAllRooms(user);
+  }
+
+  // GET ALL ROOM-----------------------------------------
+  @Get('room/:room_id')
+  @ResponseMessage(SuccessMessage.FETCH, 'Chat Room')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  getRoom(
+    @GetUser() user: User,
+    @Param('room_id', new ParseUUIDPipe()) room_id: string,
+  ) {
+    return this.chatService.getRoom(user, room_id);
+  }
+
+  //   DELETE ROOM
+  @Delete('room/:room_id')
+  @ResponseMessage(SuccessMessage.DELETE, 'Chat Room')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  deleteRoom(
+    @GetUser() user: User,
+    @Param('room_id', new ParseUUIDPipe()) room_id: string,
+  ) {
+    return this.chatService.deleteRoom(user, room_id);
+  }
 }

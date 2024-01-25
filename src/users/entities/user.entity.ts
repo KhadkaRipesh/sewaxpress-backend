@@ -1,5 +1,7 @@
 import { Book } from 'src/book/entities/book.entity';
 import { Cart } from 'src/cart/entities/cart.entity';
+import { Chat } from 'src/chat/entities/chat.entity';
+import { Room } from 'src/chat/entities/room.entity';
 import { HubReview } from 'src/hub/entities/hub-review.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { OTP } from 'src/otp/entities/otp.entity';
@@ -86,4 +88,10 @@ export class User {
 
   @OneToMany(() => Book, (book) => book.customer, { cascade: true })
   bookings: Book[];
+
+  @OneToMany(() => Room, (room) => room.customer, { cascade: true })
+  rooms: Room[];
+
+  @OneToMany(() => Chat, (chat) => chat.sender, { cascade: true })
+  chats: Chat[];
 }

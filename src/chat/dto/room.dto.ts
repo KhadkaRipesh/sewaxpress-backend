@@ -4,7 +4,7 @@ import { IsUUID } from 'class-validator';
 export class CreateRoomDto {
   @ApiProperty({ example: 'uuid here' })
   @IsUUID()
-  shop_id: string;
+  hub_id: string;
 
   @ApiProperty({ example: 'uuid here' })
   @IsUUID()

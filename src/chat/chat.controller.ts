@@ -18,6 +18,7 @@ import { Roles } from 'src/@decoraters/getRole.decorater';
 import { User, UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { CreateRoomDto } from './dto/room.dto';
+import { CreateChatDto } from './dto/chat.dto';
 
 @ApiTags('Chat')
 @ApiBearerAuth('JWT-auth')
@@ -65,5 +66,14 @@ export class ChatController {
     @Param('room_id', new ParseUUIDPipe()) room_id: string,
   ) {
     return this.chatService.deleteRoom(user, room_id);
+  }
+
+  // Send message -------------------------------------
+  @Post('chat/send')
+  @ResponseMessage(SuccessMessage.CREATE, 'Chat Room')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER)
+  sendMessage(@GetUser() user: User, @Body() payload: CreateChatDto) {
+    return this.chatService.sendMessage(user, payload);
   }
 }

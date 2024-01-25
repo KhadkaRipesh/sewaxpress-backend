@@ -15,6 +15,7 @@ import { HubReview } from './hub-review.entity';
 import { Service } from 'src/services/entities/service.entity';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { Book } from 'src/book/entities/book.entity';
+import { Room } from 'src/chat/entities/room.entity';
 
 @Entity({ name: 'hub' })
 export class Hub {
@@ -85,4 +86,7 @@ export class Hub {
 
   @OneToMany(() => Book, (book) => book.hub, { cascade: true })
   bookings: Book[];
+
+  @OneToMany(() => Room, (room) => room.hub, { cascade: true })
+  rooms: Room[];
 }

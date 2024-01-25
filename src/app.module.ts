@@ -14,6 +14,7 @@ import { ServiceModule } from './services/service.module';
 import { HubModule } from './hub/hub.module';
 import { BookModule } from './book/book.module';
 import { IncomeTaxModule } from './income-tax/income-tax.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { IncomeTaxModule } from './income-tax/income-tax.module';
     HubModule,
     BookModule,
     IncomeTaxModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

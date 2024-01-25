@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User, UserRole } from 'src/users/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { CreateRoomDto } from './dto/room.dto';
@@ -6,6 +10,7 @@ import { Room } from './entities/room.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { Chat } from './entities/chat.entity';
 import { BASE_URL } from 'src/@config/constants.config';
+import { CreateChatDto, CreateFileAndChatDto } from './dto/chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -148,5 +153,155 @@ export class ChatService {
     await this.dataSource.getRepository(Room).delete({ id: room_id });
 
     return { message: 'Room deleted successfully.' };
+  }
+
+  // Send file message
+  async sendFileMessage(
+    user: User,
+    file: Express.Multer.File,
+    payload: CreateFileAndChatDto,
+  ) {
+    const room = await this.dataSource
+      .getRepository(Room)
+      .findOne({ where: { id: payload.room_id }, relations: { hub: true } });
+
+    if (!room) throw new BadRequestException('Room Not Found.');
+    if (!file) throw new BadRequestException('Image required.');
+    payload.image = '/' + file.path;
+
+    let chatPayload = {};
+
+    payload.text
+      ? (chatPayload = {
+          text: payload.text,
+          image: payload.image,
+          room_id: payload.room_id,
+          sender_id: user.id,
+        })
+      : (chatPayload = {
+          image: payload.image,
+          room_id: payload.room_id,
+          sender_id: user.id,
+        });
+    const chat = await this.dataSource.getRepository(Chat).save(chatPayload);
+
+    const data = await this.dataSource.getRepository(Chat).findOne({
+      where: {
+        id: chat.id,
+      },
+      relations: ['sender'],
+      select: ['id', 'text', 'image', 'room_id', 'sender', 'created_at'],
+    });
+
+    const chat_row = {
+      id: data.id,
+      text: data.text,
+      created_at: data.created_at,
+      room_id: data.room_id,
+      sender: {
+        id: data.sender_id,
+        role: data.sender.role,
+        full_name: data.sender.full_name,
+      },
+      avatar: data.sender.avatar,
+    };
+
+    if (user.role === UserRole.SERVICE_PROVIDER) {
+      const shop = await this.dataSource.getRepository(Hub).findOne({
+        where: { user_id: user.id },
+        select: ['name', 'avatar'],
+      });
+      chat_row.sender.full_name = shop.name;
+      chat_row.avatar = shop.avatar;
+    }
+
+    // prepare for socket
+    // prepare for notification
+
+    return chat_row;
+  }
+
+  // Send Message
+  async sendMessage(user: User, payload: CreateChatDto) {
+    const room = await this.dataSource
+      .getRepository(Room)
+      .findOne({ where: { id: payload.room_id }, relations: { hub: true } });
+
+    if (!room) throw new BadRequestException('Room Not Found.');
+
+    // save chat on database
+    const chat = await this.dataSource.getRepository(Chat).save({
+      text: payload.text,
+      room_id: payload.room_id,
+      sender_id: user.id,
+    });
+
+    const data = await this.dataSource.getRepository(Chat).findOne({
+      where: { id: chat.id },
+      relations: ['sender'],
+      select: ['id', 'text', 'image', 'room_id', 'sender', 'created_at'],
+    });
+
+    const chat_row = {
+      id: data.id,
+      text: data.text,
+      created_at: data.created_at,
+      room_id: data.room_id,
+      sender: {
+        id: data.sender_id,
+        role: data.sender.role,
+        full_name: data.sender.full_name,
+      },
+      avatar: data.sender.avatar,
+    };
+
+    if (user.role === UserRole.SERVICE_PROVIDER) {
+      const hub = await this.dataSource.getRepository(Hub).findOne({
+        where: { user_id: user.id },
+        select: ['name', 'avatar'],
+      });
+      chat_row.sender.full_name = hub.name;
+      chat_row.avatar = hub.avatar ? BASE_URL.backend + hub.avatar : null;
+    }
+
+    // Fetching receiver user id from the room
+    let receiverUserId;
+
+    // Check if the sender is a customer or a service provider
+    if (user.role === UserRole.CUSTOMER) {
+      // If the sender is a customer, set the receiver as the seller
+      receiverUserId = room.hub.user_id;
+    } else if (user.role === UserRole.SERVICE_PROVIDER) {
+      // If the sender is a service provider, set the receiver as the customer
+      receiverUserId = room.customer_id;
+    }
+
+    // prepare for notification
+    // save notification
+
+    return chat_row;
+  }
+
+  // delete a chat
+  async deleteChat(user: User, chat_id: string) {
+    const chat = await this.dataSource.getRepository(Chat).findOne({
+      where: { id: chat_id },
+      relations: { sender: true },
+    });
+    if (!chat) {
+      return { message: 'Message not found.' };
+    }
+
+    if (chat.sender_id !== user.id) {
+      return { message: 'You are not authorized.' };
+    }
+
+    await this.dataSource.getRepository(Chat).delete({ id: chat_id });
+
+    // prepare for notification
+    return {
+      message: 'Message deleted successfully.',
+      room_id: chat.room_id,
+    };
   }
 }

@@ -273,6 +273,7 @@ export class ChatService {
       receiverUserId = room.hub.user_id;
     } else if (user.role === UserRole.SERVICE_PROVIDER) {
       // If the sender is a service provider, set the receiver as the customer
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       receiverUserId = room.customer_id;
     }
 

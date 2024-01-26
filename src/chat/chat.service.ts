@@ -11,12 +11,17 @@ import { Hub } from 'src/hub/entities/hub.entity';
 import { Chat } from './entities/chat.entity';
 import { BASE_URL } from 'src/@config/constants.config';
 import { CreateChatDto, CreateFileAndChatDto } from './dto/chat.dto';
+import { IPage } from 'src/socket/dto/socket.dto';
+import { paginateResponse } from 'src/@helpers/pagination';
 
 @Injectable()
 export class ChatService {
   constructor(private readonly dataSource: DataSource) {}
 
-  async createRoom(user: User, payload: CreateRoomDto) {
+  async createRoom(
+    user: { id: string; role: UserRole },
+    payload: CreateRoomDto,
+  ) {
     if (user.id !== payload.customer_id)
       throw new UnauthorizedException('You are not authorized.');
 
@@ -42,7 +47,7 @@ export class ChatService {
   }
 
   //   Get All Rooms
-  async getMyAllRooms(user: User) {
+  async getMyAllRooms(user: { id: string; role: UserRole }) {
     let identifier: string;
     if (user.role === UserRole.SERVICE_PROVIDER) {
       const hub = await this.dataSource
@@ -92,7 +97,7 @@ export class ChatService {
   }
 
   //   Get Room by Room id
-  async getRoom(user: User, room_id: string) {
+  async getRoom(user: { id: string; role: UserRole }, room_id: string) {
     let identifier: string;
     if (user.role === UserRole.SERVICE_PROVIDER) {
       const hub = await this.dataSource
@@ -126,10 +131,10 @@ export class ChatService {
     }
 
     return {
-      shop_id: room.hub_id,
+      hub_id: room.hub_id,
       customer_id: room.customer_id,
-      shopName: room.hub.name,
-      shopAvatar: BASE_URL.backend + room.hub.avatar,
+      hubName: room.hub.name,
+      hubAvatar: BASE_URL.backend + room.hub.avatar,
       customerFullName: room.customer.full_name,
       customerAvatar: room.customer.avatar,
     };
@@ -207,12 +212,12 @@ export class ChatService {
     };
 
     if (user.role === UserRole.SERVICE_PROVIDER) {
-      const shop = await this.dataSource.getRepository(Hub).findOne({
+      const hub = await this.dataSource.getRepository(Hub).findOne({
         where: { user_id: user.id },
         select: ['name', 'avatar'],
       });
-      chat_row.sender.full_name = shop.name;
-      chat_row.avatar = shop.avatar;
+      chat_row.sender.full_name = hub.name;
+      chat_row.avatar = hub.avatar;
     }
 
     // prepare for socket
@@ -222,7 +227,10 @@ export class ChatService {
   }
 
   // Send Message
-  async sendMessage(user: User, payload: CreateChatDto) {
+  async sendMessage(
+    user: { user_id: string; role: UserRole },
+    payload: CreateChatDto,
+  ) {
     const room = await this.dataSource
       .getRepository(Room)
       .findOne({ where: { id: payload.room_id }, relations: { hub: true } });
@@ -233,7 +241,7 @@ export class ChatService {
     const chat = await this.dataSource.getRepository(Chat).save({
       text: payload.text,
       room_id: payload.room_id,
-      sender_id: user.id,
+      sender_id: user.user_id,
     });
 
     const data = await this.dataSource.getRepository(Chat).findOne({
@@ -257,7 +265,7 @@ export class ChatService {
 
     if (user.role === UserRole.SERVICE_PROVIDER) {
       const hub = await this.dataSource.getRepository(Hub).findOne({
-        where: { user_id: user.id },
+        where: { user_id: user.user_id },
         select: ['name', 'avatar'],
       });
       chat_row.sender.full_name = hub.name;
@@ -284,14 +292,12 @@ export class ChatService {
   }
 
   // delete a chat
-  async deleteChat(user: User, chat_id: string) {
+  async deleteChat(user: { id: string; role: UserRole }, chat_id: string) {
     const chat = await this.dataSource.getRepository(Chat).findOne({
       where: { id: chat_id },
       relations: { sender: true },
     });
-    if (!chat) {
-      return { message: 'Message not found.' };
-    }
+    if (!chat) throw new BadRequestException('Message not found.');
 
     if (chat.sender_id !== user.id) {
       return { message: 'You are not authorized.' };
@@ -303,6 +309,93 @@ export class ChatService {
     return {
       message: 'Message deleted successfully.',
       room_id: chat.room_id,
+    };
+  }
+
+  // Get All Chats
+  async getAllMessages(
+    user: { id: string; role: UserRole },
+    room_id: string,
+    options?: IPage,
+  ) {
+    const take = options.limit || 10;
+    const page = options.page || 1;
+    const skip = (page - 1) * take;
+
+    //Check if room exists
+    const room = await this.dataSource
+      .getRepository(Room)
+      .findOne({ where: { id: room_id } });
+    if (!room) {
+      return { message: 'Room not found.' };
+    }
+
+    //Check if user is authorized
+    if (user.role === UserRole.SERVICE_PROVIDER) {
+      const hub = await this.dataSource
+        .getRepository(Hub)
+        .findOne({ where: { user_id: user.id } });
+      if (hub.id !== room.hub_id) {
+        return { message: 'You are not authorized.' };
+      }
+    } else {
+      if (user.id !== room.customer_id) {
+        return { message: 'You are not authorized.' };
+      }
+    }
+
+    const chats = await this.dataSource.getRepository(Chat).findAndCount({
+      where: { room_id },
+      relations: ['sender', 'sender.hub'],
+      select: {
+        id: true,
+        text: true,
+        created_at: true,
+        image: true,
+        sender_id: true,
+        sender: {
+          role: true,
+          full_name: true,
+          avatar: true,
+          hub: {
+            avatar: true,
+          },
+        },
+      },
+      take,
+      skip,
+    });
+
+    const response = paginateResponse(chats, page, take);
+
+    // message for socket
+    const dataMessage = response.result.map((res) => {
+      const avatar =
+        res.sender.role === UserRole.SERVICE_PROVIDER
+          ? res.sender.hub.avatar
+          : res.sender.avatar;
+
+      return {
+        id: res.id,
+        text: res.text,
+        hub_id: res.hub_id,
+        created_at: res.created_at,
+        customer_id: res.customer_id,
+        sender: {
+          id: res.sender_id,
+          role: res.sender.role,
+          full_name: res.sender.full_name,
+        },
+        avatar,
+      };
+    });
+
+    return {
+      totalCount: response.totalCount,
+      prevPage: response.prevPage,
+      nextPage: response.nextPage,
+      lastPage: response.lastPage,
+      result: dataMessage,
     };
   }
 }

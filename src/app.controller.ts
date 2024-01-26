@@ -9,7 +9,7 @@ export class AppController {
 
   @ResponseMessage(SuccessMessage.FETCH, 'demo')
   @Get()
-  getHello(): string {
+  getHello() {
     return this.appService.getHello();
   }
 }

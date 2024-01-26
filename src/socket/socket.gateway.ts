@@ -23,10 +23,12 @@ import { CreateChatDto } from 'src/chat/dto/chat.dto';
 import { ChatService } from 'src/chat/chat.service';
 import {
   DeleteAChatPayload,
+  EmptyPayload,
   GetARoomPayload,
   GetAllChatPayload,
 } from './dto/socket.dto';
 import { CreateRoomDto } from 'src/chat/dto/room.dto';
+import { AsyncApiSub } from 'nestjs-asyncapi';
 
 @UseFilters(WebsocketExceptionsFilter)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -118,6 +120,14 @@ export class SocketGateway
   //  CHAT SOCKET STARTS--------------------------------------------
 
   // create room
+  @AsyncApiSub({
+    channel: 'create-room',
+    summary: 'Create Room',
+    description: 'Please listen to createdroom',
+    message: {
+      payload: CreateRoomDto,
+    },
+  })
   @SubscribeMessage('create-room')
   async onCreateRoom(
     @ConnectedSocket() socket: Socket,
@@ -139,6 +149,14 @@ export class SocketGateway
   }
 
   // get my rooms
+  @AsyncApiSub({
+    channel: 'my-rooms',
+    summary: 'Get My Rooms',
+    description: 'Please listen to my_rooms',
+    message: {
+      payload: EmptyPayload,
+    },
+  })
   @SubscribeMessage('my-rooms')
   async onGetMyAllRooms(@ConnectedSocket() socket: Socket) {
     const data = await this.chatService.getMyAllRooms({
@@ -154,6 +172,14 @@ export class SocketGateway
   }
 
   // get a room
+  @AsyncApiSub({
+    channel: 'get-a-room',
+    summary: 'Get A Room',
+    description: 'Please listen to room',
+    message: {
+      payload: EmptyPayload,
+    },
+  })
   @SubscribeMessage('get-a-room')
   async onGetRoom(
     @ConnectedSocket() socket: Socket,
@@ -179,6 +205,14 @@ export class SocketGateway
   }
 
   // Get All Chats
+  @AsyncApiSub({
+    channel: 'get-all-chats',
+    summary: 'Get All Chats',
+    description: 'Please listen to all_chats',
+    message: {
+      payload: GetAllChatPayload,
+    },
+  })
   @SubscribeMessage('get-all-chats')
   async onGetMyAllMessages(
     @ConnectedSocket() socket: Socket,
@@ -205,6 +239,14 @@ export class SocketGateway
   }
 
   // send message
+  @AsyncApiSub({
+    channel: 'send-message',
+    summary: 'Send Message',
+    description: 'Please listen to message',
+    message: {
+      payload: CreateChatDto,
+    },
+  })
   @SubscribeMessage('send-message')
   async onSendMessage(
     @ConnectedSocket() socket: Socket,
@@ -231,6 +273,14 @@ export class SocketGateway
   }
 
   // Delete message
+  @AsyncApiSub({
+    channel: 'delete-message',
+    summary: 'Delete A Message',
+    description: 'Please listen to deleted_message',
+    message: {
+      payload: EmptyPayload,
+    },
+  })
   @SubscribeMessage('delete-message')
   async onDeleteMessage(
     @ConnectedSocket() socket: Socket,

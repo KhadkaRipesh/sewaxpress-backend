@@ -26,3 +26,4 @@ export class GetARoomPayload {
   @IsUUID()
   room_id: string;
 }
+export class EmptyPayload {}

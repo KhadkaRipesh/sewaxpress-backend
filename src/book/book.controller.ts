@@ -17,7 +17,7 @@ import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   BookingFilterDto,
   CancelBooking,
@@ -25,6 +25,7 @@ import {
   CreateServiceBookDto,
 } from './dto/book.dto';
 
+@ApiTags('Book')
 @Controller('book')
 export class BookController {
   constructor(private readonly bookService: BookService) {}

@@ -70,7 +70,7 @@ export class ChatController {
 
   // Send message -------------------------------------
   @Post('chat/send')
-  @ResponseMessage(SuccessMessage.CREATE, 'Chat Room')
+  @ResponseMessage(SuccessMessage.SENT, 'Chat')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER)
   sendMessage(@GetUser() user: User, @Body() payload: CreateChatDto) {

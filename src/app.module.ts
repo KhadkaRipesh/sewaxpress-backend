@@ -16,6 +16,7 @@ import { BookModule } from './book/book.module';
 import { IncomeTaxModule } from './income-tax/income-tax.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from './socket/socket.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { SocketModule } from './socket/socket.module';
     IncomeTaxModule,
     ChatModule,
     SocketModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [

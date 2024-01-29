@@ -23,3 +23,17 @@ export const BASE_URL = {
   frontend: process.env.FRONTEND_URL,
   backend: process.env.BACKEND_URL,
 };
+
+export const FIREBASE_SERVICE_ACCOUNT: {
+  type: string;
+  project_id: string;
+  private_key_id: string;
+  private_key: string;
+  client_email: string;
+} = {
+  type: process.env.FIREBASE_SERVICE_ACCOUNT_TYPE!,
+  project_id: process.env.FIREBASE_SERVICE_ACCOUNT_PROJECT_ID!,
+  private_key_id: process.env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY_ID!,
+  private_key: process.env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY!,
+  client_email: process.env.FIREBASE_SERVICE_ACCOUNT_CLIENT_EMAIL!,
+};

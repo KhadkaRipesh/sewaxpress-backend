@@ -2,6 +2,7 @@ import { Book } from 'src/book/entities/book.entity';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { Chat } from 'src/chat/entities/chat.entity';
 import { Room } from 'src/chat/entities/room.entity';
+import { FirebaseToken } from 'src/firebase/entities/firebase-token.entity';
 import { HubReview } from 'src/hub/entities/hub-review.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { OTP } from 'src/otp/entities/otp.entity';
@@ -94,4 +95,7 @@ export class User {
 
   @OneToMany(() => Chat, (chat) => chat.sender, { cascade: true })
   chats: Chat[];
+
+  @OneToMany(() => FirebaseToken, (ftoken) => ftoken.user, { cascade: true })
+  firebase_tokens: FirebaseToken[];
 }

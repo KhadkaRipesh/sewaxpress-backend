@@ -17,6 +17,7 @@ import { IncomeTaxModule } from './income-tax/income-tax.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from './socket/socket.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { TransactionModule } from './transaction/transaction.module';
     ChatModule,
     SocketModule,
     TransactionModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [

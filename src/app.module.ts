@@ -18,6 +18,7 @@ import { ChatModule } from './chat/chat.module';
 import { SocketModule } from './socket/socket.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { FirebaseModule } from './firebase/firebase.module';
     SocketModule,
     TransactionModule,
     FirebaseModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

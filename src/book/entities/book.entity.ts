@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { BookStatus } from '../dto/book.dto';
 import { BookedService } from './booked-entity';
+import { Notification } from 'src/notification/entities/notification.entity';
 
 @Entity({ name: 'book' })
 export class Book {
@@ -89,4 +90,9 @@ export class Book {
     cascade: true,
   })
   booked_services: BookedService[];
+
+  @OneToMany(() => Notification, (notification) => notification.book, {
+    cascade: true,
+  })
+  notifications: Notification[];
 }

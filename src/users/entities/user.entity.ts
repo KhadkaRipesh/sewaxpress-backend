@@ -5,6 +5,7 @@ import { Room } from 'src/chat/entities/room.entity';
 import { FirebaseToken } from 'src/firebase/entities/firebase-token.entity';
 import { HubReview } from 'src/hub/entities/hub-review.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
+import { Notification } from 'src/notification/entities/notification.entity';
 import { OTP } from 'src/otp/entities/otp.entity';
 import {
   Column,
@@ -98,4 +99,9 @@ export class User {
 
   @OneToMany(() => FirebaseToken, (ftoken) => ftoken.user, { cascade: true })
   firebase_tokens: FirebaseToken[];
+
+  @OneToMany(() => Notification, (notification) => notification.user, {
+    cascade: true,
+  })
+  notifications: Notification[];
 }

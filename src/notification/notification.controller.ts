@@ -20,6 +20,7 @@ import { ApiOperation } from '@nestjs/swagger';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
+  //   Get All notification of specific users
   @Get()
   @ApiOperation({
     summary: 'Get My Notifications',
@@ -31,9 +32,10 @@ export class NotificationController {
     @GetUser('id') user_id: string,
     @Query() query: PaginationDto,
   ) {
-    console.log(user_id, query);
+    return this.notificationService.getMyAllNotification(user_id, query);
   }
 
+  //   Fetch unread notification
   @Get('unread')
   @ApiOperation({
     summary: 'Get My Unread Notifications',
@@ -45,9 +47,10 @@ export class NotificationController {
     @GetUser('id') user_id: string,
     @Query() query: PaginationDto,
   ) {
-    console.log(user_id, query);
+    return this.notificationService.getUnreadNotifications(user_id, query);
   }
 
+  //   Count unread notification
   @Get('unread-count')
   @ApiOperation({
     summary: 'Get My Unread Notifications Count',
@@ -56,9 +59,10 @@ export class NotificationController {
   @ResponseMessage(SuccessMessage.FETCH, 'Unread Notification Count')
   @UseGuards(JwtAuthGuard)
   getUnReadCount(@GetUser('id') user_id: string) {
-    console.log(user_id);
+    return this.notificationService.getUnreadNotificationsCount(user_id);
   }
 
+  //   Mark notification as Read
   @Patch('mark-all-read')
   @ApiOperation({
     summary: 'Mark as Read notification',
@@ -67,9 +71,10 @@ export class NotificationController {
   @ResponseMessage(SuccessMessage.UPDATE, 'Notifications')
   @UseGuards(JwtAuthGuard)
   markAllAsRead(@GetUser('id') user_id: string) {
-    console.log(user_id);
+    return this.notificationService.markAllNotificationsRead(user_id);
   }
 
+  //   Delete Notification
   @Delete(':id')
   @ResponseMessage(SuccessMessage.DELETE, 'Notifications')
   @ApiOperation({ summary: 'Delete Notification', description: 'UserRole.All' })
@@ -78,6 +83,6 @@ export class NotificationController {
     @GetUser('id') user_id: string,
     @Param('id', new ParseUUIDPipe()) id: string,
   ) {
-    console.log(user_id, id);
+    return this.notificationService.deleteNotification(user_id, id);
   }
 }

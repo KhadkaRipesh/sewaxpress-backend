@@ -19,6 +19,7 @@ import { SocketModule } from './socket/socket.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { NotificationModule } from './notification/notification.module';
+import { ServiceProviderModule } from './service_provider/service_provider.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { NotificationModule } from './notification/notification.module';
     TransactionModule,
     FirebaseModule,
     NotificationModule,
+    ServiceProviderModule,
   ],
   controllers: [AppController],
   providers: [

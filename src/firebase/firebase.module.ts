@@ -8,5 +8,6 @@ import { FirebaseToken } from './entities/firebase-token.entity';
   imports: [TypeOrmModule.forFeature([FirebaseToken])],
   controllers: [FirebaseController],
   providers: [FirebaseService],
+  exports: [FirebaseService],
 })
 export class FirebaseModule {}

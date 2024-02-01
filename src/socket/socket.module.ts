@@ -8,12 +8,14 @@ import { Hub } from 'src/hub/entities/hub.entity';
 import { Book } from 'src/book/entities/book.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatModule } from 'src/chat/chat.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Room, Hub, Book]),
     JwtModule.register({}),
     ChatModule,
+    NotificationModule,
   ],
   providers: [SocketService, SocketGateway],
 })

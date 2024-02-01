@@ -29,6 +29,7 @@ import {
 } from './dto/socket.dto';
 import { CreateRoomDto } from 'src/chat/dto/room.dto';
 import { AsyncApiSub } from 'nestjs-asyncapi';
+import { NotificationService } from 'src/notification/notification.service';
 
 @UseFilters(WebsocketExceptionsFilter)
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -41,6 +42,7 @@ export class SocketGateway
     private socketService: SocketService,
     private jwtService: JwtService,
     private chatService: ChatService,
+    private notificationService: NotificationService,
   ) {}
 
   @WebSocketServer()
@@ -306,4 +308,50 @@ export class SocketGateway
   }
 
   //CHAT SOCKET ENDS--------------------------------------------
+  //NOTIFICATION SOCKET STARTS--------------------------------------------
+
+  @AsyncApiSub({
+    channel: 'get-unread-notification-count',
+    summary: 'Get Unread Notification Count',
+    description: 'Please listen to unread_notification_count',
+    message: {
+      payload: EmptyPayload,
+    },
+  })
+  @SubscribeMessage('get-unread-notification-count')
+  async onGetUnReadNotificationCountByUserId(
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const data = await this.notificationService.getUnreadNotificationsCount(
+      socket.data.user_id,
+    );
+    if (data.count || data.count === 0) {
+      socket.emit(`unread_notification_count`, { success: true, data });
+    } else {
+      socket.emit(`unread_notification_count`, { success: false, data: {} });
+    }
+  }
+
+  @AsyncApiSub({
+    channel: 'read-notification',
+    summary: 'read notification by user id',
+    description: 'Read notification. Please listen to read_notifications',
+    message: {
+      payload: EmptyPayload,
+    },
+  })
+  @SubscribeMessage('read-notification')
+  async onReadNotification(@ConnectedSocket() socket: Socket) {
+    const data = await this.notificationService.markAllNotificationsRead(
+      socket.data.user_id,
+    );
+
+    if (data) {
+      socket.emit(`read_notifications`, { success: true, data });
+    } else {
+      socket.emit(`read_notifications`, { success: false, data: {} });
+    }
+  }
+
+  //NOTIFICATION SOCKET ENDS--------------------------------------------
 }

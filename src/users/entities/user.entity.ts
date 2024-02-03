@@ -106,6 +106,9 @@ export class User {
   })
   notifications: Notification[];
 
+  @OneToMany(() => Book, (book) => book.service_provider, { cascade: true })
+  book: Book[];
+
   @OneToMany(() => ServiceProviderPaymentDetail, (payment) => payment.user, {
     cascade: true,
   })

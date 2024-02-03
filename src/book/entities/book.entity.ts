@@ -86,6 +86,12 @@ export class Book {
   @Column({ type: 'boolean', default: false, select: false })
   paid_to_serviceProvider: boolean;
 
+  @Column({ nullable: true, default: null })
+  service_provider_id: string;
+  @ManyToOne(() => User, (user) => user.book, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'service_provider_id' })
+  service_provider: User;
+
   @OneToMany(() => BookedService, (bookedService) => bookedService.book, {
     cascade: true,
   })

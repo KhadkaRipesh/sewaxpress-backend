@@ -53,6 +53,11 @@ async function bootstrap() {
   const asyncapiDocument = AsyncApiModule.createDocument(app, asyncApiOptions);
   await AsyncApiModule.setup('docs/socket', app, asyncapiDocument);
 
+  app.enableCors({
+    origin: '*',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  });
+
   await app.listen(PORT);
 }
 bootstrap();

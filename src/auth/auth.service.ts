@@ -49,7 +49,7 @@ export class AuthService {
       savedUser.id,
       OTPType.emailVerification,
     );
-    const linkToCreatePassword = `http://localhost:8848/${savedUser.id}/set-password/${otp.code}`;
+    const linkToCreatePassword = `http://localhost:5173/${savedUser.id}/set-password/${otp.code}`;
     sendMail({
       to: email,
       subject: 'Welcome To SewaXpress',

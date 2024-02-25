@@ -18,6 +18,7 @@ import { OTPType } from 'src/otp/entities/otp.entity';
 import { defaultMailTemplate } from 'src/@utils/mail-template';
 import { sendMail } from 'src/@helpers/mail';
 import { JwtService } from '@nestjs/jwt';
+import { BASE_URL } from 'src/@config/constants.config';
 
 @Injectable()
 export class AuthService {
@@ -49,7 +50,7 @@ export class AuthService {
       savedUser.id,
       OTPType.emailVerification,
     );
-    const linkToCreatePassword = `http://localhost:5173/${savedUser.id}/set-password/${otp.code}`;
+    const linkToCreatePassword = `${BASE_URL.frontend}/${savedUser.id}/set-password/${otp.code}`;
     sendMail({
       to: email,
       subject: 'Welcome To SewaXpress',

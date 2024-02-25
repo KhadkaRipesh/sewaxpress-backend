@@ -28,7 +28,6 @@ export class AuthController {
   @ResponseMessage(SuccessMessage.REGISTER, 'User')
   @Post('register')
   register(@Body() payload: CreateCustomerDTO) {
-    console.log(payload);
     return this.authService.createUser(payload);
   }
 

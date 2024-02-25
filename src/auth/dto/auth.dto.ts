@@ -57,12 +57,6 @@ export class LoginUserDTO {
   email: string;
 
   @ApiProperty({ minLength: 8, example: 'Secret@123' })
-  @IsStrongPassword({
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-  })
   @IsNotEmpty()
   @IsString()
   password: string;

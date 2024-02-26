@@ -25,6 +25,11 @@ export enum UserRole {
   CUSTOMER = 'CUSTOMER',
 }
 
+export enum AuthType {
+  EMAIL = 'EMAIL',
+  GOOGLE = 'GOOGLE',
+}
+
 export interface IAddress {
   city: string;
   street_name: string;
@@ -65,6 +70,9 @@ export class User {
 
   @Column({ type: 'boolean', default: false })
   is_verified: boolean;
+
+  @Column({ type: 'enum', enum: AuthType, default: AuthType.EMAIL })
+  auth_type: AuthType;
 
   @CreateDateColumn()
   created_at: Date;

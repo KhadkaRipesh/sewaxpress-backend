@@ -1,4 +1,15 @@
-import { Body, Controller, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   CreateCustomerDTO,
   LoginUserDTO,
@@ -18,11 +29,41 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { GoogleAuthGuard } from 'src/@guards/google.guard';
+import { GetUser } from 'src/@decoraters/getUser.decorater';
+import { Response } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  // ----------Register User by GOOGLE---------------
+
+  @Get('register/google')
+  @UseGuards(GoogleAuthGuard)
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  registerFromGoogle() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  async registerUserFromGoogleCallBack(@GetUser() user, @Res() res: Response) {
+    const value = {
+      email: user._json.email,
+      name: user._json.name,
+    };
+    const data = await this.authService.registerUserGoogle(value);
+    if (data.token) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/success/google/callback?access_token=${data.token}&user_type=${data.user_type}`,
+      );
+    } else {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/error/google/callback?error=${data}`,
+      );
+    }
+  }
 
   // To create customer
   @ResponseMessage(SuccessMessage.REGISTER, 'User')

@@ -12,13 +12,13 @@ import {
   ResetPasswordDto,
   ResetPasswordRequestDTO,
 } from './dto/auth.dto';
-import { User } from 'src/users/entities/user.entity';
+import { AuthType, User, UserRole } from 'src/users/entities/user.entity';
 import { OtpService } from 'src/otp/otp.service';
 import { OTPType } from 'src/otp/entities/otp.entity';
 import { defaultMailTemplate } from 'src/@utils/mail-template';
 import { sendMail } from 'src/@helpers/mail';
 import { JwtService } from '@nestjs/jwt';
-import { BASE_URL } from 'src/@config/constants.config';
+import { BASE_URL, GOOGLE, JWT_SECRET } from 'src/@config/constants.config';
 
 @Injectable()
 export class AuthService {
@@ -179,5 +179,45 @@ export class AuthService {
     }
     await this.dataSource.getRepository(User).save(user);
     await this.otpService.deleteOtp(user.id, otp, OTPType.passwordReset);
+  }
+
+  // ---------Registration fro the gmail
+  async registerUserGoogle({ email, name }: { email: string; name: string }) {
+    //  ---------Checking existence of user--------
+    const user = await this.dataSource
+      .getRepository(User)
+      .findOne({ where: { email } });
+
+    //  --------------If user already exixts-----------------
+    if (user && user.auth_type == AuthType.EMAIL) {
+      throw new BadRequestException('User with the email already exists.');
+    }
+    //  -----Created new user if there is no existance of the user---------
+    if (!user) {
+      const user = new User();
+      user.full_name = name;
+      user.email = email;
+      user.password = await argon.hash(GOOGLE.password);
+      user.is_verified = true;
+      user.role = UserRole.CUSTOMER;
+      user.auth_type = AuthType.GOOGLE;
+
+      //  ----------------------Saving User on database------------------
+      await this.dataSource.getRepository(User).save(user);
+    }
+    const newUser = await this.dataSource
+      .getRepository(User)
+      .findOne({ where: { email } });
+
+    //  -------------------------Generating token--------------------------
+    const token = await this.jwtService.signAsync(
+      { sub: newUser.id },
+      { expiresIn: '1d', secret: JWT_SECRET },
+    );
+
+    return {
+      token,
+      user_type: newUser.role,
+    };
   }
 }

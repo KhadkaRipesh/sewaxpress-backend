@@ -37,3 +37,10 @@ export const FIREBASE_SERVICE_ACCOUNT: {
   private_key: process.env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY!,
   client_email: process.env.FIREBASE_SERVICE_ACCOUNT_CLIENT_EMAIL!,
 };
+// Google auth
+export const GOOGLE = {
+  clientID: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  callbackURL: process.env.CALLBACKURL,
+  password: process.env.GOOGLE_PASSWORD,
+};

@@ -45,6 +45,7 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   registerFromGoogle() {}
 
+  @ResponseMessage(SuccessMessage.LOGGED_IN, 'Google')
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -54,13 +55,13 @@ export class AuthController {
       name: user._json.name,
     };
     const data = await this.authService.registerUserGoogle(value);
-    if (data.token) {
+    if (data.message) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/success/google/callback?error=${data.message}`,
+      );
+    } else if (data.token) {
       return res.redirect(
         `${process.env.FRONTEND_URL}/success/google/callback?access_token=${data.token}&user_type=${data.user_type}`,
-      );
-    } else {
-      return res.redirect(
-        `${process.env.FRONTEND_URL}/error/google/callback?error=${data}`,
       );
     }
   }

@@ -190,7 +190,7 @@ export class AuthService {
 
     //  --------------If user already exixts-----------------
     if (user && user.auth_type == AuthType.EMAIL) {
-      throw new BadRequestException('User with the email already exists.');
+      return { message: 'Email already used on this application.' };
     }
     //  -----Created new user if there is no existance of the user---------
     if (!user) {

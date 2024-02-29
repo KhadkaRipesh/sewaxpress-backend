@@ -115,6 +115,7 @@ export class AuthService {
       otp,
       OTPType.emailVerification,
     );
+    console.log(isValid);
     if (!isValid) throw new BadRequestException('You cannot set password.');
     if (payload.password === payload.re_password) {
       (user.password = await argon.hash(payload.password)),
@@ -148,7 +149,7 @@ export class AuthService {
     //recreating new OTP---------------
     const otp = await this.otpService.createOtp(user.id, OTPType.passwordReset);
 
-    const linkToResetPassword = `http://localhost:8848/${user.id}/set-password/${otp.code}`;
+    const linkToResetPassword = `${BASE_URL.frontend}/${user.id}/set-password/${otp.code}`;
 
     // New OTP Sended------------------
     sendMail({

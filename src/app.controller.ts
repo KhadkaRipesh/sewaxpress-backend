@@ -12,4 +12,10 @@ export class AppController {
   getHello() {
     return this.appService.getHello();
   }
+
+  @ResponseMessage(SuccessMessage.FETCH, 'Dashboard Data')
+  @Get('dashboard')
+  getdashboardData() {
+    return this.appService.getDashbaoardData();
+  }
 }

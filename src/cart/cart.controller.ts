@@ -5,20 +5,19 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { ResponseMessage } from 'src/@decoraters/response.decorater';
 import { SuccessMessage } from 'src/@utils';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
-import { AddServiceToCartDto, UpdateServiceToCartDto } from './dto/cart.dto';
+import { AddServiceToCartDto } from './dto/cart.dto';
 
 @ApiTags('Cart')
 @Controller('cart')
@@ -34,6 +33,7 @@ export class CartController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.CUSTOMER)
+  @ApiBearerAuth('JWT-auth')
   addServiceOnCart(
     @GetUser('id') customer_id: string,
     @Body() payload: AddServiceToCartDto,
@@ -42,7 +42,6 @@ export class CartController {
   }
 
   // Payment
-
   @Post('payment')
   @ResponseMessage(SuccessMessage.ADD, 'Service')
   @ApiOperation({
@@ -70,22 +69,22 @@ export class CartController {
   // }
 
   // Update service on  Cart
-  @Patch('service/:service_id')
-  @ResponseMessage(SuccessMessage.UPDATE, 'Cart service')
-  @ApiOperation({ summary: 'Update Cart', description: `${UserRole.CUSTOMER}` })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
-  updateServiceOnCart(
-    @GetUser('id') customer_id: string,
-    @Body() payload: UpdateServiceToCartDto,
-    @Param('service_id', new ParseUUIDPipe()) service_id: string,
-  ) {
-    return this.cartService.updateServiceOnCart(
-      customer_id,
-      service_id,
-      payload,
-    );
-  }
+  // @Patch('service/:service_id')
+  // @ResponseMessage(SuccessMessage.UPDATE, 'Cart service')
+  // @ApiOperation({ summary: 'Update Cart', description: `${UserRole.CUSTOMER}` })
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.CUSTOMER)
+  // updateServiceOnCart(
+  //   @GetUser('id') customer_id: string,
+  //   @Body() payload: UpdateServiceToCartDto,
+  //   @Param('service_id', new ParseUUIDPipe()) service_id: string,
+  // ) {
+  //   return this.cartService.updateServiceOnCart(
+  //     customer_id,
+  //     service_id,
+  //     payload,
+  //   );
+  // }
 
   @ResponseMessage(SuccessMessage.DELETE, ' Cart Service')
   @Delete('service/:service_id')

@@ -52,7 +52,6 @@ export class BookService {
           'hub.user_id',
           'cart_services.id',
           'cart_services.service_id',
-          'cart_services.note',
           'user',
           'service',
           'customer',
@@ -89,7 +88,6 @@ export class BookService {
           booked_id: book.id,
           service_id: cart.cart_services[i].service_id,
           price: cart.cart_services[i].service.price,
-          note: cart.cart_services[i].note,
         });
       }
 
@@ -228,7 +226,6 @@ export class BookService {
           id: true,
           service_id: true,
           service: { name: true },
-          note: true,
           price: true,
         },
         sub_total: true,
@@ -276,7 +273,6 @@ export class BookService {
         'service.id',
         'service.name',
         'booked_services.id',
-        'booked_services.note',
         'booked_services.price',
         'book.sub_total',
         'book.grand_total',

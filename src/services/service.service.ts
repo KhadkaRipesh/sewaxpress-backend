@@ -63,6 +63,7 @@ export class ServiceService {
         'service.price',
         'service.is_available',
         'service.image',
+        'hub.id',
         'hub.name',
         'hub.address',
         'category.category_name',

@@ -19,14 +19,16 @@ export class CategoryService {
 
   //   To get service Category
   async getServiceCategory(query: PaginationDto) {
-    const skip = (query.page - 1) * query.limit;
+    const limit = query.limit || 10;
+    const page = query.page || 1;
+    const skip = (page - 1) * limit;
     const categories = await this.dataSource
       .getRepository(Category)
       .findAndCount({
-        take: query.limit,
+        take: limit,
         skip: skip,
       });
-    return paginateResponse(categories, query.page, query.limit);
+    return paginateResponse(categories, page, limit);
   }
   //   To get individual service category detail
   async getServiceCategoryDetails(category_id: string) {

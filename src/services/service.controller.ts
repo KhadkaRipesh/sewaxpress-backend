@@ -142,7 +142,6 @@ export class ServiceController {
   }
 
   // Search Service By Name
-
   @Get('search/search-by-name')
   @ResponseMessage(SuccessMessage.FETCH, 'Service Name')
   @ApiOperation({

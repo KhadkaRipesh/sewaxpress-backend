@@ -21,9 +21,6 @@ export class CartService {
   @JoinColumn({ name: 'service_id' })
   service: Service;
 
-  @Column({ type: 'varchar', length: 255 })
-  note: string;
-
   @Column()
   cart_id: string;
   @ManyToOne(() => Cart, (cart) => cart.cart_services, {

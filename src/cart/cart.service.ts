@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { AddServiceToCartDto, UpdateServiceToCartDto } from './dto/cart.dto';
+import { AddServiceToCartDto } from './dto/cart.dto';
 import { Service } from 'src/services/entities/service.entity';
 import { Cart, PaymentStatus } from './entities/cart.entity';
 import { CartService as CartItem } from './entities/cart-service.entity';
@@ -28,7 +28,6 @@ export class CartService {
         'hub.id',
         'hub.name',
         'cart_services.id',
-        'cart_services.note',
         'service.id',
         'service.name',
         'service.image',
@@ -163,7 +162,6 @@ export class CartService {
       await this.dataSource.getRepository(CartItem).save({
         cart_id: cart[0].id,
         service_id: payload.service_id,
-        note: payload.note,
       });
 
       return this.getCart(customer_id);
@@ -188,25 +186,24 @@ export class CartService {
       );
   }
 
-  // Update Service of cart
-  async updateServiceOnCart(
-    customer_id: string,
-    service_id: string,
-    payload: UpdateServiceToCartDto,
-  ) {
-    const service = await this.dataSource
-      .getRepository(Cart)
-      .findOne({ where: { customer_id, cart_services: { service_id } } });
+  // // Update Service of cart
+  // async updateServiceOnCart(
+  //   customer_id: string,
+  //   service_id: string,
+  //   payload: UpdateServiceToCartDto,
+  // ) {
+  //   const service = await this.dataSource
+  //     .getRepository(Cart)
+  //     .findOne({ where: { customer_id, cart_services: { service_id } } });
 
-    if (!service) throw new BadRequestException('Service does not exist.');
+  //   if (!service) throw new BadRequestException('Service does not exist.');
 
-    await this.dataSource.getRepository(CartItem).save({
-      id: service.cart_services[0].id,
-      note: payload.note,
-    });
+  //   await this.dataSource.getRepository(CartItem).save({
+  //     id: service.cart_services[0].id,
+  //   });
 
-    return await this.getCart(customer_id);
-  }
+  //   return await this.getCart(customer_id);
+  // }
 
   // Update Cart
   // async updateCart(

@@ -20,11 +20,17 @@ import { TransactionModule } from './transaction/transaction.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { NotificationModule } from './notification/notification.module';
 import { ServiceProviderModule } from './service_provider/service_provider.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: () => TypeormConfig,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+      serveRoot: '/static',
     }),
     UsersModule,
     AuthModule,

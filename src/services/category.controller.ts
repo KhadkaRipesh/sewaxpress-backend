@@ -38,7 +38,6 @@ export class CategoryController {
   // To get service category
   @ResponseMessage(SuccessMessage.FETCH, 'Service Category')
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
   getCategory(@Query() query: PaginationDto) {
     return this.categoryService.getServiceCategory(query);
   }

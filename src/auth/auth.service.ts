@@ -110,11 +110,9 @@ export class AuthService {
       .findOne({ where: { id: userId } });
     if (!user) throw new BadRequestException('User not found.');
 
-    const isValid = await this.otpService.validateOtp(
-      user.id,
-      otp,
-      OTPType.emailVerification,
-    );
+    const emailtype = OTPType.passwordReset || OTPType.emailVerification;
+    const isValid = await this.otpService.validateOtp(user.id, otp, emailtype);
+
     console.log(isValid);
     if (!isValid) throw new BadRequestException('You cannot set password.');
     if (payload.password === payload.re_password) {
@@ -147,7 +145,10 @@ export class AuthService {
     }
 
     //recreating new OTP---------------
-    const otp = await this.otpService.createOtp(user.id, OTPType.passwordReset);
+    const otp = await this.otpService.createOtp(
+      user.id,
+      OTPType.emailVerification,
+    );
 
     const linkToResetPassword = `${BASE_URL.frontend}/${user.id}/set-password/${otp.code}`;
 

@@ -95,10 +95,6 @@ export class BookService {
         });
       }
 
-      await queryRunner.manager.getRepository(Cart).delete({
-        id: cart.id,
-      });
-
       //   Prepare for email
       const serviceNames = cart.cart_services.map(
         (service) => service.service.name,

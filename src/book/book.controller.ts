@@ -30,23 +30,6 @@ import {
 export class BookController {
   constructor(private readonly bookService: BookService) {}
 
-  //   To create booking
-  @Post('/:hub_id')
-  @ResponseMessage(SuccessMessage.CREATE, 'Service Booking')
-  @ApiOperation({
-    summary: 'Create New Order',
-    description: `${UserRole.CUSTOMER}`,
-  })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
-  createBooking(
-    @GetUser('id') customer_id: string,
-    @Param('hub_id', new ParseUUIDPipe()) hub_id: string,
-    @Body() payload: CreateServiceBookDto,
-  ) {
-    return this.bookService.createBooking(customer_id, hub_id, payload);
-  }
-
   // Get All bookings of hub
   @Get()
   @ResponseMessage(SuccessMessage.FETCH, 'Bookings')
@@ -179,5 +162,21 @@ export class BookController {
     @Body() payload: CancelBooking,
   ) {
     return this.bookService.cancelBooking(customer_id, book_id, payload);
+  }
+
+  //   To create booking
+  @Post()
+  @ResponseMessage(SuccessMessage.BOOK, 'Service')
+  @ApiOperation({
+    summary: 'Create New Booking',
+    description: `${UserRole.CUSTOMER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  createBooking(
+    @GetUser('id') customer_id: string,
+    @Body() payload: CreateServiceBookDto,
+  ) {
+    return this.bookService.createBooking(customer_id, payload);
   }
 }

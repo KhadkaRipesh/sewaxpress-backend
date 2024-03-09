@@ -27,11 +27,7 @@ export class BookService {
     private cartService: CartService,
   ) {}
 
-  async createBooking(
-    customer_id: string,
-    hub_id: string,
-    payload: CreateServiceBookDto,
-  ) {
+  async createBooking(customer_id: string, payload: CreateServiceBookDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -59,6 +55,7 @@ export class BookService {
         ])
         .getOne();
 
+      console.log(cart);
       if (!cart)
         throw new BadRequestException(
           'There is no services on cart to book service.',
@@ -69,7 +66,7 @@ export class BookService {
 
       const book = await queryRunner.manager.getRepository(Book).save({
         customer_id,
-        hub_id,
+        hub_id: cart.hub_id,
         booking_date: payload.booking_date,
         book_otp: booking_otp,
         booking_address: payload.booking_address,

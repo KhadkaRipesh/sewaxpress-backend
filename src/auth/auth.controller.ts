@@ -55,6 +55,7 @@ export class AuthController {
       name: user._json.name,
     };
     const data = await this.authService.registerUserGoogle(value);
+    console.log(data);
     if (data.message) {
       return res.redirect(
         `${process.env.FRONTEND_URL}/success/google/callback?error=${data.message}`,

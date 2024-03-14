@@ -17,7 +17,7 @@ export class CreateServiceDto {
   name: string;
 
   @ApiProperty({ format: 'binary', example: 'example.jpg' })
-  image: any;
+  image: string;
 
   @ApiProperty({ example: 'Hardware of laptop will be repair from here.' })
   @IsString()

@@ -18,7 +18,7 @@ export class ServiceService {
   async createService(user_id: string, payload: CreateServiceDto) {
     const hub = await this.dataSource
       .getRepository(Hub)
-      .findOne({ where: { id: payload.hub_id, user_id: user_id } });
+      .findOne({ where: { user_id: user_id } });
 
     if (!hub)
       throw new BadRequestException(
@@ -120,7 +120,7 @@ export class ServiceService {
     const service = await this.dataSource.getRepository(Service).findOne({
       where: {
         id: service_id,
-        hub: { id: payload.hub_id, user_id: user_id },
+        hub: { user_id: user_id },
       },
     });
     if (!service)

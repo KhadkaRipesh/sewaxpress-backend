@@ -110,7 +110,7 @@ export class AuthService {
       .findOne({ where: { id: userId } });
     if (!user) throw new BadRequestException('User not found.');
 
-    const emailtype = OTPType.passwordReset || OTPType.emailVerification;
+    const emailtype = OTPType.emailVerification;
     const isValid = await this.otpService.validateOtp(user.id, otp, emailtype);
 
     console.log(isValid);

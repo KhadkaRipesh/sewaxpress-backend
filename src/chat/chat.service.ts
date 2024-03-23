@@ -22,6 +22,7 @@ export class ChatService {
     user: { id: string; role: UserRole },
     payload: CreateRoomDto,
   ) {
+    console.log('Hello');
     if (user.id !== payload.customer_id)
       throw new UnauthorizedException('You are not authorized.');
 
@@ -112,7 +113,7 @@ export class ChatService {
       .createQueryBuilder('room')
       .leftJoinAndSelect('room.hub', 'hub')
       .leftJoinAndSelect('room.customer', 'customer')
-      .where('room.id -:room_id', { room_id })
+      .where('room.id = :room_id', { room_id })
       .where('room.hub_id = :identifier', { identifier })
       .orWhere('room.customer_id = :identifier', { identifier })
       .select([

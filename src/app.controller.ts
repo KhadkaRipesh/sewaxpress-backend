@@ -13,6 +13,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  // Admin Dashboard Data
   @ResponseMessage(SuccessMessage.FETCH, 'Dashboard Data')
   @Get('dashboard')
   getdashboardData() {

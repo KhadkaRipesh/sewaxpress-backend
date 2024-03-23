@@ -43,10 +43,6 @@ export class CreateServiceDto {
 
   @ApiProperty({ example: '4c700ef9-29f0-49da-8e3f-b67bc331868c' })
   @IsUUID()
-  hub_id: string;
-
-  @ApiProperty({ example: '4c700ef9-29f0-49da-8e3f-b67bc331868c' })
-  @IsUUID()
   category_id: string;
 }
 

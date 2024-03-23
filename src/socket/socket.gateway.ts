@@ -33,7 +33,7 @@ import { NotificationService } from 'src/notification/notification.service';
 
 @UseFilters(WebsocketExceptionsFilter)
 @UsePipes(new ValidationPipe({ transform: true }))
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -112,6 +112,7 @@ export class SocketGateway
       console.log(`Socket connected: ${socket.id}`);
     } catch (error) {
       Printer('Socket Error', error);
+      return error;
     }
   }
 

@@ -19,8 +19,7 @@ export class UsersController {
   @Get('current-user')
   @ResponseMessage(SuccessMessage.FETCH, 'user')
   @UseGuards(JwtAuthGuard)
-  async getCurrentUser(@GetUser('id') user: User) {
-    console.log(user);
+  async getCurrentUser(@GetUser() user: User) {
     return user;
   }
 

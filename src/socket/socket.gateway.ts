@@ -227,7 +227,6 @@ export class SocketGateway
         role: socket.data.role,
       },
       payload.room_id,
-      payload?.options,
     );
 
     if (data) {
@@ -255,7 +254,7 @@ export class SocketGateway
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: CreateChatDto,
   ) {
-    console.log(`Received message in room ${payload.room_id}`);
+    console.log(socket.data.user_id);
     const data = await this.chatService.sendMessage(
       {
         user_id: socket.data.user_id,

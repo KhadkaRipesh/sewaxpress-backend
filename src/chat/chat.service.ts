@@ -11,8 +11,6 @@ import { Hub } from 'src/hub/entities/hub.entity';
 import { Chat } from './entities/chat.entity';
 import { BASE_URL } from 'src/@config/constants.config';
 import { CreateChatDto, CreateFileAndChatDto } from './dto/chat.dto';
-import { IPage } from 'src/socket/dto/socket.dto';
-import { paginateResponse } from 'src/@helpers/pagination';
 
 @Injectable()
 export class ChatService {
@@ -32,7 +30,7 @@ export class ChatService {
 
     if (existingRoom) {
       return {
-        message: 'A room already exists between this customer and seller.',
+        message: 'A room already exists between this customer and hub.',
         ...existingRoom,
       };
     } else {
@@ -346,6 +344,7 @@ export class ChatService {
         created_at: true,
         image: true,
         sender_id: true,
+        room_id: true,
         sender: {
           role: true,
           full_name: true,
@@ -378,6 +377,7 @@ export class ChatService {
           id: res.sender_id,
           role: res.sender.role,
         },
+        room_id: res.room_id,
         senderName,
         avatar,
       };

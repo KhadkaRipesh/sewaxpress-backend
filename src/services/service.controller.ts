@@ -164,9 +164,8 @@ export class ServiceController {
   getService(
     @Param('location') location: string,
     @Param('category') category_id: string,
-    @Query() pagination: PaginationDto,
   ) {
-    return this.serviceService.getAllService(location, category_id, pagination);
+    return this.serviceService.getAllService(location, category_id);
   }
 
   // Soft delete Service

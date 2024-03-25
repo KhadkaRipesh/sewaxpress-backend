@@ -257,7 +257,7 @@ export class ChatService {
       created_at: data.created_at,
       room_id: data.room_id,
       sender: {
-        id: data.sender_id,
+        id: data.sender.id,
         role: data.sender.role,
         full_name: data.sender.full_name,
       },
@@ -314,15 +314,7 @@ export class ChatService {
   }
 
   // Get All Chats
-  async getAllMessages(
-    user: { id: string; role: UserRole },
-    room_id: string,
-    options?: IPage,
-  ) {
-    const take = options.limit || 10;
-    const page = options.page || 1;
-    const skip = (page - 1) * take;
-
+  async getAllMessages(user: { id: string; role: UserRole }, room_id: string) {
     //Check if room exists
     const room = await this.dataSource
       .getRepository(Room)
@@ -337,15 +329,15 @@ export class ChatService {
         .getRepository(Hub)
         .findOne({ where: { user_id: user.id } });
       if (hub.id !== room.hub_id) {
-        return { message: 'You are not authorized.' };
+        throw new BadRequestException('You are not authorized.');
       }
     } else {
       if (user.id !== room.customer_id) {
-        return { message: 'You are not authorized.' };
+        throw new BadRequestException('You are not authorized.');
       }
     }
 
-    const chats = await this.dataSource.getRepository(Chat).findAndCount({
+    const chats = await this.dataSource.getRepository(Chat).find({
       where: { room_id },
       relations: ['sender', 'sender.hub'],
       select: {
@@ -359,44 +351,38 @@ export class ChatService {
           full_name: true,
           avatar: true,
           hub: {
+            name: true,
             avatar: true,
           },
         },
       },
-      take,
-      skip,
     });
 
-    const response = paginateResponse(chats, page, take);
+    const response = chats;
 
     // message for socket
-    const dataMessage = response.result.map((res) => {
+    const dataMessage = response.map((res) => {
       const avatar =
         res.sender.role === UserRole.SERVICE_PROVIDER
           ? res.sender.hub.avatar
           : res.sender.avatar;
-
+      const senderName =
+        res.sender.role === UserRole.SERVICE_PROVIDER
+          ? res.sender.hub.name
+          : res.sender.full_name;
       return {
         id: res.id,
         text: res.text,
-        hub_id: res.hub_id,
         created_at: res.created_at,
-        customer_id: res.customer_id,
         sender: {
           id: res.sender_id,
           role: res.sender.role,
-          full_name: res.sender.full_name,
         },
+        senderName,
         avatar,
       };
     });
 
-    return {
-      totalCount: response.totalCount,
-      prevPage: response.prevPage,
-      nextPage: response.nextPage,
-      lastPage: response.lastPage,
-      result: dataMessage,
-    };
+    return dataMessage;
   }
 }

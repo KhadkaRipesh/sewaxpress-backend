@@ -46,11 +46,11 @@ export class ChatController {
     return this.chatService.getMyAllRooms(user);
   }
 
-  // GET ALL ROOM-----------------------------------------
+  // GET ROOM-----------------------------------------
   @Get('room/:room_id')
   @ResponseMessage(SuccessMessage.FETCH, 'Chat Room')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
+  @Roles(UserRole.CUSTOMER, UserRole.SERVICE_PROVIDER)
   getRoom(
     @GetUser() user: User,
     @Param('room_id', new ParseUUIDPipe()) room_id: string,
@@ -90,9 +90,8 @@ export class ChatController {
   getAllChats(
     @GetUser() user: User,
     @Param('room_id', new ParseUUIDPipe()) room_id: string,
-    @Query() options?: IPage,
   ) {
-    return this.chatService.getAllMessages(user, room_id, options);
+    return this.chatService.getAllMessages(user, room_id);
   }
 
   //   DELETE CHAT

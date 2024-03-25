@@ -6,7 +6,6 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -20,7 +19,6 @@ import { User, UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { CreateRoomDto } from './dto/room.dto';
 import { CreateChatDto } from './dto/chat.dto';
-import { IPage } from 'src/socket/dto/socket.dto';
 
 @ApiTags('Chat')
 @ApiBearerAuth('JWT-auth')

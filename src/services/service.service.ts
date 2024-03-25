@@ -40,14 +40,7 @@ export class ServiceService {
   }
 
   //   Get All Services from address
-  async getAllService(
-    location: string,
-    category: string,
-    pagination: PaginationDto,
-  ) {
-    const take = pagination.limit || 10;
-    const page = pagination.page || 1;
-    const skip = (page - 1) * take;
+  async getAllService(location: string, category: string) {
     const query = this.dataSource
       .getRepository(Service)
       .createQueryBuilder('service')
@@ -67,14 +60,12 @@ export class ServiceService {
         'hub.name',
         'hub.address',
         'category.category_name',
-      ])
-      .take(take)
-      .skip(skip);
+      ]);
 
     //   can add review of the service or hub too
-    const rawData = await query.getManyAndCount();
+    const rawData = await query.getMany();
 
-    return paginateResponse(rawData, page, take);
+    return rawData;
   }
 
   async getMyService(user_id: string, query: PaginationDto) {
@@ -96,6 +87,7 @@ export class ServiceService {
         'service.price',
         'service.is_available',
         'service.image',
+        'hub.id',
         'hub.name',
         'hub.address',
         'category.category_name',

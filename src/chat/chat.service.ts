@@ -20,7 +20,6 @@ export class ChatService {
     user: { id: string; role: UserRole },
     payload: CreateRoomDto,
   ) {
-    console.log('Hello');
     if (user.id !== payload.customer_id)
       throw new UnauthorizedException('You are not authorized.');
 
@@ -72,7 +71,7 @@ export class ChatService {
         'customer.full_name',
         'customer.avatar',
       ])
-      .getRawMany();
+      .getMany();
 
     // get last message of each room
     const rooms = await Promise.all(
@@ -80,13 +79,13 @@ export class ChatService {
         const lastMessage = await this.dataSource
           .getRepository(Chat)
           .createQueryBuilder('chat')
-          .where('chat.room_id = :room_id', { room_id: room.room_id })
+          .where('chat.room_id = :room_id', { room_id: room.id })
           .orderBy('chat.created_at', 'DESC')
           .getOne();
 
         return {
           ...room,
-          chat_text: lastMessage ? lastMessage.text : null,
+          last_text: lastMessage ? lastMessage.text : null,
           text_created_at: lastMessage ? lastMessage.created_at : null,
         };
       }),
@@ -97,23 +96,12 @@ export class ChatService {
 
   //   Get Room by Room id
   async getRoom(user: { id: string; role: UserRole }, room_id: string) {
-    let identifier: string;
-    if (user.role === UserRole.SERVICE_PROVIDER) {
-      const hub = await this.dataSource
-        .getRepository(Hub)
-        .findOne({ where: { user_id: user.id } });
-      identifier = hub.id;
-    } else {
-      identifier = user.id;
-    }
     const room = await this.dataSource
       .getRepository(Room)
       .createQueryBuilder('room')
       .leftJoinAndSelect('room.hub', 'hub')
       .leftJoinAndSelect('room.customer', 'customer')
       .where('room.id = :room_id', { room_id })
-      .where('room.hub_id = :identifier', { identifier })
-      .orWhere('room.customer_id = :identifier', { identifier })
       .select([
         'room.id',
         'room.hub_id',
@@ -128,14 +116,17 @@ export class ChatService {
     if (!room) {
       return { message: 'Room not found.' };
     }
+    const lastMessage = await this.dataSource
+      .getRepository(Chat)
+      .createQueryBuilder('chat')
+      .where('chat.room_id = :room_id', { room_id: room.id })
+      .orderBy('chat.created_at', 'DESC')
+      .getOne();
 
     return {
-      hub_id: room.hub_id,
-      customer_id: room.customer_id,
-      hubName: room.hub.name,
-      hubAvatar: BASE_URL.backend + room.hub.avatar,
-      customerFullName: room.customer.full_name,
-      customerAvatar: room.customer.avatar,
+      ...room,
+      last_text: lastMessage ? lastMessage.text : null,
+      text_created_at: lastMessage ? lastMessage.created_at : null,
     };
   }
 
@@ -268,7 +259,7 @@ export class ChatService {
         select: ['name', 'avatar'],
       });
       chat_row.sender.full_name = hub.name;
-      chat_row.avatar = hub.avatar ? BASE_URL.backend + hub.avatar : null;
+      chat_row.avatar = hub.avatar ? hub.avatar : null;
     }
 
     // Fetching receiver user id from the room

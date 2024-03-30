@@ -19,6 +19,7 @@ import { defaultMailTemplate } from 'src/@utils/mail-template';
 import { sendMail } from 'src/@helpers/mail';
 import { JwtService } from '@nestjs/jwt';
 import { BASE_URL, GOOGLE, JWT_SECRET } from 'src/@config/constants.config';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class AuthService {
@@ -95,6 +96,7 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       },
     );
+
     return {
       access_token,
       is_verified: user.is_verified,

@@ -26,12 +26,23 @@ export class FirebaseService {
     user_id: string,
     payload: CreateFirebaseNotificationTokenDto,
   ) {
+    const existingToken = await this.dataSource.manager.findOne(FirebaseToken, {
+      where: {
+        user_id,
+        notification_token: payload.notification_token,
+      },
+    });
+
+    if (existingToken) {
+      return { message: 'Token already exists for this user.' };
+    }
+
     await this.dataSource.manager.save(FirebaseToken, {
       user_id,
       device_type: payload.device_type,
       notification_token: payload.notification_token,
     });
-    return { message: 'Token saved.' };
+    return { message: 'Token initialized.' };
   }
   // Update token
   async updateToken(
@@ -64,6 +75,7 @@ export class FirebaseService {
     const tokens = await this.dataSource.manager.find(FirebaseToken, {
       where: { user_id: In(user_ids), is_active: true },
     });
+    console.log('Tokens', tokens);
     for (const token of tokens) {
       await firebase
         .messaging()
@@ -74,6 +86,7 @@ export class FirebaseService {
             body: payload.body,
           },
         })
+        .then((res) => console.log(res))
         .catch((error) => {
           Printer('FIREBASE NOTIFICATION ERROR: ', error);
         });

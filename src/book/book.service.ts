@@ -19,12 +19,14 @@ import { bookingMailTemplate } from 'src/@utils/mail-template';
 import { applyDateFilter } from 'src/@filter/dateFilter';
 import { paginateResponse } from 'src/@helpers/pagination';
 import { Hub } from 'src/hub/entities/hub.entity';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class BookService {
   constructor(
     private readonly dataSource: DataSource,
     private cartService: CartService,
+    private firebaseService: FirebaseService,
   ) {}
 
   async createBooking(customer_id: string, payload: CreateServiceBookDto) {
@@ -55,7 +57,6 @@ export class BookService {
         ])
         .getOne();
 
-      console.log(cart);
       if (!cart)
         throw new BadRequestException(
           'There is no services on cart to book service.',
@@ -147,6 +148,12 @@ export class BookService {
         to: cart.hub.user.email,
         subject: 'Booking Confirmation',
         html: bookingMailTemplate(email[1]),
+      });
+      console.log(cart.customer.id);
+
+      await this.firebaseService.sendPushNotifications([cart.hub.user.id], {
+        title: 'Service Request',
+        body: `New service book requested by ${cart.customer.full_name}`,
       });
 
       await queryRunner.commitTransaction();

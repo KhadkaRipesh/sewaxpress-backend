@@ -28,11 +28,8 @@ export class NotificationController {
   })
   @ResponseMessage(SuccessMessage.FETCH, 'Notification')
   @UseGuards(JwtAuthGuard)
-  getAllNotification(
-    @GetUser('id') user_id: string,
-    @Query() query: PaginationDto,
-  ) {
-    return this.notificationService.getMyAllNotification(user_id, query);
+  getAllNotification(@GetUser('id') user_id: string) {
+    return this.notificationService.getMyAllNotification(user_id);
   }
 
   //   Fetch unread notification

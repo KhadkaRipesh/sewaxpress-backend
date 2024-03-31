@@ -9,21 +9,13 @@ export class NotificationService {
   constructor(private readonly dataSource: DataSource) {}
 
   //   Get All Notificaion of Specific User
-  async getMyAllNotification(user_id: string, query?: PaginationDto) {
-    const take = query?.limit || 10;
-    const page = query?.page || 1;
-    const skip = (page - 1) * take;
+  async getMyAllNotification(user_id: string) {
+    const data = await this.dataSource.getRepository(Notification).find({
+      where: { user_id },
+      order: { created_at: 'DESC' },
+    });
 
-    const data = await this.dataSource
-      .getRepository(Notification)
-      .findAndCount({
-        where: { user_id },
-        order: { created_at: 'DESC' },
-        take,
-        skip,
-      });
-
-    return paginateResponse(data, page, take);
+    return data;
   }
 
   //   Get All Unread Notifcation of Specific User

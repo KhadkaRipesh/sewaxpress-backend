@@ -9,12 +9,19 @@ import { CreateRoomDto } from './dto/room.dto';
 import { Room } from './entities/room.entity';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { Chat } from './entities/chat.entity';
-import { BASE_URL } from 'src/@config/constants.config';
 import { CreateChatDto, CreateFileAndChatDto } from './dto/chat.dto';
+import {
+  Notification,
+  NotificationType,
+} from 'src/notification/entities/notification.entity';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private firebaseService: FirebaseService,
+  ) {}
 
   async createRoom(
     user: { id: string; role: UserRole },
@@ -276,7 +283,19 @@ export class ChatService {
     }
 
     // prepare for notification
-    // save notification
+    const notification = {
+      title: 'New message.',
+      body: 'You have new message from ' + chat_row.sender.full_name,
+      user_id: receiverUserId,
+      notification_type: NotificationType.message,
+    };
+
+    //save notification
+    await this.dataSource.getRepository(Notification).save(notification);
+    await this.firebaseService.sendPushNotifications([receiverUserId], {
+      title: 'New message.',
+      body: `You have new message from ${chat_row.sender.full_name}.`,
+    });
 
     return chat_row;
   }

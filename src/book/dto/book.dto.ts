@@ -7,7 +7,6 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { PaginationDto } from 'src/@helpers/pagination.dto';
 
 export enum BookStatus {
   bookingPlaced = 'BOOKING_PLACED',
@@ -17,10 +16,10 @@ export enum BookStatus {
   readyForService = 'READYFORSERVICE',
 }
 export enum FilterByDateType {
-  TODAY = 'today',
-  YESTERDAY = 'yesterday',
-  LAST_7_DAYS = 'last_7_days',
-  LAST_30_DAYS = 'last_30_days',
+  TODAY = 'TODAY',
+  YESTERDAY = 'YESTERDAY',
+  LAST_7_DAYS = 'LAST_7_DAYS',
+  LAST_30_DAYS = 'LAST_30_DAYS',
   CUSTOM = 'custom',
 }
 
@@ -35,7 +34,7 @@ export class CreateServiceBookDto {
   booking_address: string;
 }
 
-export class BookingFilterDto extends PaginationDto {
+export class BookingFilterDto {
   @ApiPropertyOptional({
     type: 'enum',
     example: 'BOOKING-PROCESSING',

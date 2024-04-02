@@ -168,10 +168,6 @@ export class BookService {
 
   // Get All booking
   async getAllBooking(service_provider_id: string, query: BookingFilterDto) {
-    const page = query?.page || 1;
-    const take = query?.limit || 10;
-    const skip = (page - 1) * take;
-
     //Validate custom filter date
     if (query && query.date === FilterByDateType.CUSTOM) {
       if (!query.start_date || !query.end_date) {
@@ -186,8 +182,6 @@ export class BookService {
       .where('hub.user_id =:service_provider_id', { service_provider_id })
       .leftJoinAndSelect('book.customer', 'customer')
       .leftJoinAndSelect('book.booked_services', 'booked_services')
-      .skip(skip)
-      .take(take)
       .orderBy('book.booking_date', 'DESC');
 
     if (query) {
@@ -200,9 +194,9 @@ export class BookService {
         sql = applyDateFilter(sql, query, 'book', 'booking_date');
       }
     }
-    const result = await sql.getManyAndCount();
+    const result = await sql.getMany();
 
-    return paginateResponse(result, page, take);
+    return result;
   }
 
   // Track booking
@@ -239,10 +233,6 @@ export class BookService {
   // Get My All bookings (CUSTOMER)
 
   async getAllMyBookings(customer_id: string, query: BookingFilterDto) {
-    const page = query?.page || 1;
-    const take = query?.limit || 10;
-    const skip = (page - 1) * take;
-
     //Validate custom filter date
     if (query && query.date === FilterByDateType.CUSTOM) {
       if (!query.start_date || !query.end_date) {
@@ -254,7 +244,7 @@ export class BookService {
       .getRepository(Book)
       .createQueryBuilder('book')
       .leftJoinAndSelect('book.customer', 'customer')
-      .where('customer.id =:customer_id', { customer_id })
+      .where('customer.id = :customer_id', { customer_id })
       .leftJoinAndSelect('book.hub', 'hub')
       .leftJoinAndSelect('book.booked_services', 'booked_services')
       .leftJoinAndSelect('booked_services.service', 'service')
@@ -277,8 +267,6 @@ export class BookService {
         'book.sub_total',
         'book.grand_total',
       ])
-      .skip(skip)
-      .take(take)
       .orderBy('book.booking_date', 'DESC');
 
     if (query) {
@@ -291,8 +279,8 @@ export class BookService {
         sql = applyDateFilter(sql, query, 'book', 'booking_date');
       }
     }
-    const result = await sql.getManyAndCount();
-    return paginateResponse(result, page, take);
+    const result = await sql.getMany();
+    return result;
   }
 
   async changeBookStatus(

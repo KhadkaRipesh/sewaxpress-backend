@@ -6,6 +6,7 @@ import {
 import { DataSource } from 'typeorm';
 import * as argon from 'argon2';
 import {
+  ChangePasswordDto,
   CreateCustomerDTO,
   LoginUserDTO,
   PasswordCreationDTO,
@@ -19,7 +20,6 @@ import { defaultMailTemplate } from 'src/@utils/mail-template';
 import { sendMail } from 'src/@helpers/mail';
 import { JwtService } from '@nestjs/jwt';
 import { BASE_URL, GOOGLE, JWT_SECRET } from 'src/@config/constants.config';
-import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class AuthService {
@@ -223,5 +223,25 @@ export class AuthService {
       token,
       user_type: newUser.role,
     };
+  }
+
+  // Change passwords
+  async changePassword(payload: ChangePasswordDto, user_id: string) {
+    const user = await this.dataSource.getRepository(User).findOne({
+      where: { id: user_id },
+      select: { id: true, password: true },
+    });
+
+    if (!(await argon.verify(user.password, payload.current_password))) {
+      throw new BadRequestException('Invalid old Password');
+    }
+    if (payload.new_password != payload.re_password) {
+      throw new BadRequestException('Password do not matched');
+    }
+    const hashedPassword = await argon.hash(payload.new_password);
+    await this.dataSource
+      .getRepository(User)
+      .update(user.id, { password: hashedPassword });
+    return { message: 'Password changed successfully' };
   }
 }

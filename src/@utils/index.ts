@@ -32,4 +32,5 @@ export enum SuccessMessage {
   ACTIVATE = '%s activated',
   SENT = '%s  sent',
   CANCEL = '%s cancelled successfully.',
+  CHANGE = '%s changed successfully.',
 }

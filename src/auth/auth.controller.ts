@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ChangePasswordDto,
   CreateCustomerDTO,
   LoginUserDTO,
   PasswordCreationDTO,
@@ -32,6 +33,7 @@ import {
 import { GoogleAuthGuard } from 'src/@guards/google.guard';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
 import { Response } from 'express';
+import { JwtAuthGuard } from 'src/@guards/auth.guard';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -129,5 +131,19 @@ export class AuthController {
     @Body() payload: ResetPasswordDto,
   ) {
     return this.authService.resetPassword(userId, payload, otp);
+  }
+
+  // To create password
+  @ResponseMessage(SuccessMessage.CHANGE, 'Password')
+  @Post('/change-password')
+  @ApiOperation({ summary: 'Change your password' })
+  @ApiOkResponse({ description: 'Password Changed.' })
+  @ApiUnauthorizedResponse({ description: 'Failed to change password.' })
+  @UseGuards(JwtAuthGuard)
+  changePassword(
+    @Body() payload: ChangePasswordDto,
+    @GetUser('id') user_id: string,
+  ) {
+    return this.authService.changePassword(payload, user_id);
   }
 }

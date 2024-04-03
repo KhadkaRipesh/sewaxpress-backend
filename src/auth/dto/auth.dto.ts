@@ -76,6 +76,25 @@ export class PasswordCreationDTO {
   re_password: string;
 }
 
+export class ChangePasswordDto {
+  @ApiProperty({ minLength: 8, example: 'Secret@123' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  current_password: string;
+
+  @ApiProperty({ minLength: 8, example: 'Secret@123' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  new_password: string;
+
+  @ApiProperty({ minLength: 8, example: 'Secret@123' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  re_password: string;
+}
 export class ResendEmailVerificationCodeDTO {
   @IsEmail()
   @ApiProperty({ example: 'johndoe@example.com' })

@@ -1,4 +1,13 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/@guards/auth.guard';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
@@ -8,8 +17,11 @@ import { SuccessMessage } from 'src/@utils';
 import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
-import { UserFilterDTO } from './dto/user.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { UpdateUserDTO, UserFilterDTO } from './dto/user.dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { imageFileFilter, filename } from 'src/@helpers/storage';
 
 @ApiTags('User')
 @Controller('users')
@@ -32,5 +44,29 @@ export class UsersController {
     @Query() filter: UserFilterDTO,
   ) {
     return this.userService.getAllUsers(query, filter);
+  }
+
+  // Update user profile
+  @UseGuards(JwtAuthGuard)
+  @ResponseMessage(SuccessMessage.UPDATE, 'User profile')
+  @Patch('current-user')
+  @ApiOperation({
+    summary: 'Update current user ',
+  })
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: 'static/user/avatars',
+        filename,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  updateCurrentUser(
+    @GetUser() user: User,
+    @Body() payload: UpdateUserDTO,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.userService.updateCurrentUser(user, payload, file);
   }
 }

@@ -63,6 +63,12 @@ export class Book {
   price_after_tax: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  total_before_bid: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  customer_bid: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   grand_total: number;
 
   @Column({

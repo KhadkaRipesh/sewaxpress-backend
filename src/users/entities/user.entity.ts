@@ -52,15 +52,8 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true })
   avatar: string;
 
-  @Column({
-    type: 'jsonb',
-    default: {
-      city: '',
-      street_name: '',
-      landmark: '',
-    },
-  })
-  address: IAddress;
+  @Column({ nullable: true })
+  address: string;
 
   @Column({ select: false, nullable: true })
   password: string;

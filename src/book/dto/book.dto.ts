@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -24,6 +25,9 @@ export enum FilterByDateType {
 }
 
 export class CreateServiceBookDto {
+  @IsNumber()
+  after_fare_price: number;
+
   @ApiProperty({ example: '2023-07-20' })
   @IsDateString()
   booking_date: Date;

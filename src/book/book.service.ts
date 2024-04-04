@@ -17,9 +17,12 @@ import { BookedService } from './entities/booked-entity';
 import { sendMail } from 'src/@helpers/mail';
 import { bookingMailTemplate } from 'src/@utils/mail-template';
 import { applyDateFilter } from 'src/@filter/dateFilter';
-import { paginateResponse } from 'src/@helpers/pagination';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import {
+  Notification,
+  NotificationType,
+} from 'src/notification/entities/notification.entity';
 
 @Injectable()
 export class BookService {
@@ -30,6 +33,7 @@ export class BookService {
   ) {}
 
   async createBooking(customer_id: string, payload: CreateServiceBookDto) {
+    console.log(payload);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -48,6 +52,7 @@ export class BookService {
         .select([
           'cart',
           'hub.user_id',
+          'hub.name',
           'cart_services.id',
           'cart_services.service_id',
           'user',
@@ -76,7 +81,9 @@ export class BookService {
         price_after_discount: cartDetails['total_after_discount'],
         tax_amount: cartDetails['tax_amount'],
         price_after_tax: cartDetails['total_after_tax'],
-        grand_total: cartDetails['grand_total'],
+        total_before_bid: cartDetails['grand_total'],
+        customer_bid: payload.after_fare_price - cartDetails['grand_total'],
+        grand_total: payload.after_fare_price,
       });
 
       //   Save the booked service
@@ -106,11 +113,31 @@ export class BookService {
       );
       const categoryList = categoryNames.join(', ');
 
+      const notification = [
+        // for customer
+        {
+          title: 'Book requested.',
+          body: 'You have requested service from ' + cart.hub.name,
+          user_id: cart.customer.id,
+          notification_type: NotificationType.BOOK,
+        },
+        // for service provider
+        {
+          title: 'Book requested.',
+          body: 'Your service is requested from' + book.booking_address,
+          user_id: cart.hub.user.id,
+          notification_type: NotificationType.BOOK,
+        },
+      ];
+
+      await this.dataSource.getRepository(Notification).save(notification);
+
       const email = [
         // for customer
         {
           title: 'Booking Confirmation',
-          message: 'Thank you for booking service using sewaXpress.',
+          message:
+            'Your booking request has been sent to service provider. You will be notified from service provider as soon as posible.',
           name: cart.customer.full_name,
           service_name: serviceList,
           service_category: categoryList,
@@ -124,7 +151,7 @@ export class BookService {
         // for service provider
         {
           title: 'Booking Confirmation',
-          message: 'The service of your hub has been booked.',
+          message: 'The service of your hub has been requested.',
           name: cart.hub.user.full_name,
           service_name: serviceList,
           service_category: categoryList,
@@ -146,10 +173,9 @@ export class BookService {
       // send email to service provider
       sendMail({
         to: cart.hub.user.email,
-        subject: 'Booking Confirmation',
+        subject: 'Booking Requested',
         html: bookingMailTemplate(email[1]),
       });
-      console.log(cart.customer.id);
 
       await this.firebaseService.sendPushNotifications([cart.hub.user.id], {
         title: 'Service Request',

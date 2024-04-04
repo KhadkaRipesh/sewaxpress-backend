@@ -166,7 +166,7 @@ export class BookController {
 
   //   To create booking
   @Post()
-  @ResponseMessage(SuccessMessage.BOOK, 'Service')
+  @ResponseMessage(SuccessMessage.REQUEST, 'Service')
   @ApiOperation({
     summary: 'Create New Booking',
     description: `${UserRole.CUSTOMER}`,

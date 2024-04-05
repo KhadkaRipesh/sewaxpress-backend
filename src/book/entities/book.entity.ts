@@ -89,7 +89,7 @@ export class Book {
   })
   vendor_commission: number;
 
-  @Column({ type: 'boolean', default: false, select: false })
+  @Column({ type: 'boolean', default: false })
   paid_to_serviceProvider: boolean;
 
   @Column({ nullable: true, default: null })

@@ -23,6 +23,9 @@ import {
   Notification,
   NotificationType,
 } from 'src/notification/entities/notification.entity';
+import axios from 'axios';
+import { error } from 'console';
+import { KHALTI_SECRET } from 'src/@config/constants.config';
 
 @Injectable()
 export class BookService {
@@ -284,6 +287,7 @@ export class BookService {
         'book.book_status',
         'book.book_otp',
         'book.paid_to_serviceProvider',
+        'book.hasCustomerPaid',
         'hub.name',
         'hub.address',
         'hub.avatar',
@@ -382,6 +386,7 @@ export class BookService {
         'book.book_status',
         'book.book_otp',
         'book.paid_to_serviceProvider',
+        'book.hasCustomerPaid',
         'hub.name',
         'hub.address',
         'hub.avatar',
@@ -472,5 +477,51 @@ export class BookService {
     // create notification for service provider
 
     return true;
+  }
+
+  // ----Payement-----
+  async makePayment(customer_id: string, book_id: string) {
+    const book = await this.dataSource
+      .getRepository(Book)
+      .findOne({ where: { customer_id: customer_id, id: book_id } });
+
+    if (!book)
+      throw new BadRequestException('User doesnot has any booking services.');
+
+    // Khalti setup
+    try {
+      const res = await axios.post(
+        `https://a.khalti.com/api/v2/epayment/initiate/`,
+        {
+          return_url: `http://localhost:8000/book/${book_id}`,
+          website_url: 'http://localhost:8000',
+          amount: 10000,
+          purchase_order_id: book.id,
+          purchase_order_name: 'Test',
+          customer_info: {
+            name: 'Test User',
+            email: 'test@khalti.com',
+            phone: '9800000001',
+          },
+        },
+        {
+          headers: {
+            Authorization: KHALTI_SECRET,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      // save payment
+      await this.dataSource
+        .getRepository(Book)
+        .update(
+          { id: book.id },
+          { payment_id: res.data.pidx, hasCustomerPaid: true },
+        );
+
+      return res.data.payment_url;
+    } catch (error) {}
+    console.log('Error', error.toString);
   }
 }

@@ -107,4 +107,10 @@ export class Book {
     cascade: true,
   })
   notifications: Notification[];
+
+  @Column({ nullable: true })
+  payment_id: string;
+
+  @Column({ default: false, nullable: true })
+  hasCustomerPaid: boolean;
 }

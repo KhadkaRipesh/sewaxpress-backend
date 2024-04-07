@@ -168,24 +168,6 @@ export class CartService {
     }
   }
 
-  // ----Payement-----
-  async makePayment(customer_id: string) {
-    const cart = await this.dataSource
-      .getRepository(Cart)
-      .findOne({ where: { customer_id: customer_id } });
-
-    if (!cart) throw new BadRequestException('User doesnot has any carts.');
-
-    // Khalti setup
-    // update payement id
-    await this.dataSource
-      .getRepository(Cart)
-      .update(
-        { id: cart.id },
-        { payment_id: 'b2334717-2b38-40fb-b072-11622a161df1' },
-      );
-  }
-
   // // Update Service of cart
   // async updateServiceOnCart(
   //   customer_id: string,

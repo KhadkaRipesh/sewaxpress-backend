@@ -41,9 +41,6 @@ export class Cart {
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   payment_status: PaymentStatus;
 
-  @Column({ nullable: true })
-  payment_id: string;
-
   @OneToMany(() => CartService, (cartservice) => cartservice.cart, {
     cascade: true,
   })

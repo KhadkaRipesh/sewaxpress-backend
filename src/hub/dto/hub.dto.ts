@@ -2,16 +2,18 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBooleanString,
+  IsEmail,
   IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
   IsString,
-  ValidateNested,
+  IsStrongPassword,
+  Matches,
+  MinLength,
 } from 'class-validator';
-import { HubTimingDto } from './hub-days.dto';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 
 export enum HubStatus {
   PENDING = 'PENDING', // when hub is created by service provider
@@ -22,71 +24,63 @@ export enum HubStatus {
 export class CreateHubDto {
   @ApiProperty({ example: 'Ripeshs Tech' })
   @IsString()
+  @IsNotEmpty()
   name: string;
-
-  @ApiProperty({ example: '+9779861595869' })
-  @IsPhoneNumber()
-  phone_number: string;
-
-  @ApiProperty({ example: ' ' })
-  @IsString()
-  description: string;
-
-  @ApiProperty({ example: 'example.jpg', format: 'binary' })
-  avatar: any;
 
   @ApiProperty({ example: 'Lalitpur' })
   @IsString()
   @IsNotEmpty()
   address: string;
 
-  @ApiProperty({ example: '654654' })
-  @IsNotEmpty()
+  @ApiProperty({ example: ' ' })
   @IsString()
-  abn_acn_number: string;
+  @IsNotEmpty()
+  description: string;
+
+  @ApiProperty({ example: 'example.jpg', format: 'binary' })
+  avatar: any;
 
   @IsArray()
   @ApiPropertyOptional({ type: 'array', format: 'binary', isArray: true })
   @IsOptional()
   documents?: any[];
 
-  @ApiPropertyOptional({
-    example: {
-      sunday: {
-        open: '8am',
-        close: '6pm',
-      },
-      monday: {
-        open: '8am',
-        close: '6pm',
-      },
-      tuesday: {
-        open: '8am',
-        close: '6pm',
-      },
-      wednesday: {
-        open: '8am',
-        close: '6pm',
-      },
-      thursday: {
-        open: '8am',
-        close: '6pm',
-      },
-      friday: {
-        open: '8am',
-        close: '6pm',
-      },
-      saturday: {
-        open: '8am',
-        close: '6pm',
-      },
-    },
+  // service provider details
+  @ApiProperty({ example: 'johndoe@gmail.com' })
+  @IsEmail()
+  @Transform(({ value }) => value.toLowerCase())
+  email: string;
+
+  @ApiProperty({ example: 'John Doe' })
+  @IsString()
+  @MinLength(3)
+  @Matches(/^[a-zA-Z ]*$/, {
+    message: 'Full name must contain only letters and space',
   })
-  @ValidateNested()
-  @Type(() => HubTimingDto)
-  @IsOptional()
-  opening_hours?: HubTimingDto;
+  full_name: string;
+
+  @ApiProperty({ example: '+9779861595869' })
+  @IsPhoneNumber()
+  phone_number: string;
+
+  @ApiProperty({ minLength: 8, example: 'Secret@123' })
+  @IsStrongPassword({
+    minLength: 8,
+    minLowercase: 1,
+    minUppercase: 1,
+    minNumbers: 1,
+  })
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+
+  @ApiPropertyOptional({ example: 'example.jpg', format: 'binary' })
+  citizenship_front: any;
+
+  @ApiPropertyOptional({ example: 'example.jpg', format: 'binary' })
+  citizenship_back: any;
 }
+
 export class GetHubByStatusDto {
   @ApiPropertyOptional({
     type: 'enum',
@@ -96,18 +90,6 @@ export class GetHubByStatusDto {
   @IsEnum(HubStatus)
   @IsOptional()
   status: HubStatus;
-
-  @ApiPropertyOptional({ example: 12 })
-  @IsInt()
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  page: number;
-
-  @ApiPropertyOptional({ example: 10 })
-  @IsInt()
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  limit: number;
 }
 
 export class UpdateHubDto extends CreateHubDto {
@@ -124,4 +106,15 @@ export class UpdateHubDto extends CreateHubDto {
   @IsOptional()
   @IsBooleanString()
   is_verified: boolean;
+}
+
+export class UpdateHubByAdminDto {
+  @ApiPropertyOptional({
+    type: 'enum',
+    example: HubStatus.PENDING,
+    enum: HubStatus,
+  })
+  @IsEnum(HubStatus)
+  @IsOptional()
+  status: HubStatus;
 }

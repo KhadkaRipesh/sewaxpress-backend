@@ -26,7 +26,12 @@ import { RolesGuard } from 'src/@guards/roles.guard';
 import { Roles } from 'src/@decoraters/getRole.decorater';
 import { User, UserRole } from 'src/users/entities/user.entity';
 import { GetUser } from 'src/@decoraters/getUser.decorater';
-import { CreateHubDto, GetHubByStatusDto, UpdateHubDto } from './dto/hub.dto';
+import {
+  CreateHubDto,
+  GetHubByStatusDto,
+  UpdateHubByAdminDto,
+  UpdateHubDto,
+} from './dto/hub.dto';
 import { ResponseMessage } from 'src/@decoraters/response.decorater';
 import { SuccessMessage } from 'src/@utils';
 import { CreateHubReviewDto } from './dto/hub-review.dto';
@@ -45,6 +50,8 @@ export class HubController {
       [
         { name: 'avatar', maxCount: 1 },
         { name: 'documents', maxCount: 3 },
+        { name: 'citizenship_front', maxCount: 3 },
+        { name: 'citizenship_back', maxCount: 3 },
       ],
       {
         storage: diskStorage({
@@ -57,15 +64,11 @@ export class HubController {
   )
   @ApiConsumes('application/json')
   @ApiConsumes('multipart/form-data')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Roles(UserRole.SERVICE_PROVIDER)
   registerHub(
-    @GetUser('id') user_id: string,
     @Body() payload: CreateHubDto,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.hubService.registerHub(user_id, payload, files);
+    return this.hubService.registerHub(payload, files);
   }
 
   //   Get All Hubs by Admin
@@ -97,7 +100,7 @@ export class HubController {
   @ApiOperation({
     summary: 'Get a Particular Hub.',
   })
-  getShopById(@Param('hub_id', ParseUUIDPipe) hub_id: string) {
+  getHubById(@Param('hub_id', ParseUUIDPipe) hub_id: string) {
     return this.hubService.getHubById(hub_id);
   }
 
@@ -126,6 +129,23 @@ export class HubController {
   ) {
     return this.hubService.updateHub(user, hub_id, payload, files);
   }
+
+  @Patch('admin/:hub_id')
+  @ApiOperation({ summary: 'Update Hub Status' })
+  @ResponseMessage(SuccessMessage.UPDATE, 'service hub')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Roles(UserRole.ADMIN)
+  @ApiConsumes('application/json')
+  @ApiConsumes('multipart/form-data')
+  UpdateHubStatusByAdmin(
+    @Param('hub_id', new ParseUUIDPipe()) hub_id: string,
+    @Body() payload: UpdateHubByAdminDto,
+  ) {
+    return this.hubService.UpdateHubStatusByAdmin(hub_id, payload);
+  }
+
+  // UpdateHubStatusByAdmin
 
   //   Review for Hub
   @Post('review/:hub_id')

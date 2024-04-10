@@ -68,10 +68,7 @@ export class ServiceService {
     return rawData;
   }
 
-  async getMyService(user_id: string, query: PaginationDto) {
-    const take = query.limit || 10;
-    const page = query.page || 1;
-    const skip = (page - 1) * take;
+  async getMyService(user_id: string) {
     const data = this.dataSource
       .getRepository(Service)
       .createQueryBuilder('service')
@@ -92,13 +89,10 @@ export class ServiceService {
         'hub.address',
         'category.category_name',
       ])
-      .skip(skip)
-      .take(take)
-      .getManyAndCount();
+      .getMany();
 
     const finalData = await data;
-
-    return paginateResponse(finalData, page, take);
+    return finalData;
   }
 
   // To update Service

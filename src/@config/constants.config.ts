@@ -44,3 +44,6 @@ export const GOOGLE = {
   callbackURL: process.env.CALLBACKURL,
   password: process.env.GOOGLE_PASSWORD,
 };
+
+// Khalti
+export const KHALTI_SECRET = process.env.KHALTI_SECRET;

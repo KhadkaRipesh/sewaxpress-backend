@@ -37,9 +37,6 @@ export class Hub {
   @Column({ type: 'varchar', length: 255 })
   address: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  abn_acn_number: string;
-
   @Column({ type: 'enum', enum: HubStatus, default: HubStatus.PENDING })
   status: HubStatus;
 
@@ -51,6 +48,12 @@ export class Hub {
 
   @Column({ type: 'text', array: true, default: [] })
   documents: string[];
+
+  @Column({ type: 'text', nullable: true })
+  citizenship_front: string;
+
+  @Column({ type: 'text', nullable: true })
+  citizenship_back: string;
 
   @Column({ type: 'jsonb', default: {} })
   opening_hours: THubTiming;

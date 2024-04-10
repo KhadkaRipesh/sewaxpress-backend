@@ -41,19 +41,6 @@ export class CartController {
     return this.cartService.addServiceOnCart(customer_id, payload);
   }
 
-  // Payment
-  @Post('payment')
-  @ResponseMessage(SuccessMessage.ADD, 'Service')
-  @ApiOperation({
-    summary: 'Make Payment',
-    description: `${UserRole.CUSTOMER}`,
-  })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
-  makePayment(@GetUser('id') customer_id: string) {
-    return this.cartService.makePayment(customer_id);
-  }
-
   // Update Cart
   // @Patch(':cart_id')
   // @ResponseMessage(SuccessMessage.UPDATE, 'Cart')

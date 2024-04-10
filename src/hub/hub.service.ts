@@ -8,16 +8,20 @@ import {
   CreateHubDto,
   GetHubByStatusDto,
   HubStatus,
+  UpdateHubByAdminDto,
   UpdateHubDto,
 } from './dto/hub.dto';
 import { Hub } from './entities/hub.entity';
 import { BASE_URL } from 'src/@config/constants.config';
 import { paginateResponse } from 'src/@helpers/pagination';
-import { User, UserRole } from 'src/users/entities/user.entity';
+import { AuthType, User, UserRole } from 'src/users/entities/user.entity';
 import * as fs from 'fs';
 import { CreateHubReviewDto } from './dto/hub-review.dto';
 import { HubReview } from './entities/hub-review.entity';
 import { PaginationDto } from 'src/@helpers/pagination.dto';
+import * as argon from 'argon2';
+import { sendMail } from 'src/@helpers/mail';
+import { defaultMailTemplate } from 'src/@utils/mail-template';
 
 @Injectable()
 export class HubService {
@@ -25,11 +29,7 @@ export class HubService {
 
   //   Register Hub
 
-  async registerHub(
-    user_id: string,
-    payload: CreateHubDto,
-    files: Express.Multer.File[],
-  ) {
+  async registerHub(payload: CreateHubDto, files: Express.Multer.File[]) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -38,6 +38,11 @@ export class HubService {
       if (!files['documents'])
         throw new BadRequestException('Documents are required');
 
+      if (!files['citizenship_front'])
+        throw new BadRequestException('Documents are required');
+
+      if (!files['citizenship_back'])
+        throw new BadRequestException('Documents are required');
       payload.avatar = '/' + files['avatar'][0].path;
 
       payload.documents = [];
@@ -45,16 +50,33 @@ export class HubService {
         payload.documents.push('/' + document.path);
       });
 
-      //Check if user already has a shop
-      const hubExist = await this.dataSource
-        .getRepository(Hub)
-        .findOne({ where: { user_id } });
-      if (hubExist)
-        throw new BadRequestException('User already have a service hub');
+      payload.citizenship_front = '/' + files['citizenship_front'][0].path;
+      payload.citizenship_back = '/' + files['citizenship_back'][0].path;
+
+      const userExist = await this.dataSource
+        .getRepository(User)
+        .findOne({ where: { email: payload.email } });
+
+      if (userExist)
+        throw new BadRequestException(
+          'Sorry, email exists..Try from different Email.',
+        );
+      const user = new User();
+      user.email = payload.email;
+      user.full_name = payload.full_name;
+      user.phone_number = payload.phone_number;
+      user.password = await argon.hash(payload.password);
+      user.role = UserRole.SERVICE_PROVIDER;
+      user.is_verified = false;
+      user.auth_type = AuthType.EMAIL;
+
+      const newServiceProvider = await this.dataSource
+        .getRepository(User)
+        .save(user);
 
       const hub = await this.dataSource
         .getRepository(Hub)
-        .save({ ...payload, user_id });
+        .save({ ...payload, user_id: newServiceProvider.id });
       hub.avatar = BASE_URL.backend + hub.avatar;
       hub.documents = hub.documents.map((path) => BASE_URL.backend + path);
 
@@ -68,20 +90,19 @@ export class HubService {
     }
   }
 
-  //    Get All Shop By Admin
+  //    Get All Hub By Admin
   async getAllHubsByStatus(query: GetHubByStatusDto) {
-    const { status, page: pg, limit } = query;
-    const take = limit || 10;
-    const page = pg || 1;
-    const skip = (page - 1) * take;
+    const { status } = query;
 
-    const data = await this.dataSource.getRepository(Hub).findAndCount({
+    const data = await this.dataSource.getRepository(Hub).find({
       where: { status },
-      take,
-      skip,
+      relations: ['user'],
+      order: {
+        created_at: 'DESC',
+      },
     });
-    const hubs = paginateResponse(data, page, limit);
-    return hubs;
+
+    return data;
   }
 
   //   Get own shop from here
@@ -99,18 +120,11 @@ export class HubService {
 
   //   Get A hub
   async getHubById(hub_id: string) {
+    console.log(hub_id);
     const query = this.dataSource
       .getRepository(Hub)
       .createQueryBuilder('hub')
       .where('hub.id = :hub_id', { hub_id })
-      .select([
-        'hub.name as name',
-        'hub.avatar as avatar',
-        'hub.description as description',
-        'hub.phone_number as phone_number',
-        'hub.address as address',
-        'hub.opening_hours as opening_hours',
-      ])
       .addSelect(
         '(SELECT AVG(rating) as rating FROM hub_review WHERE "hub_id" = hub.id)',
         'avg_rating',
@@ -163,13 +177,6 @@ export class HubService {
       }
     }
 
-    if (payload.opening_hours) {
-      payload['opening_hours'] = {
-        ...hub.opening_hours,
-        ...payload.opening_hours,
-      };
-    }
-
     Object.assign(hub, payload);
 
     const updatedHub = await this.dataSource.getRepository(Hub).save({
@@ -181,6 +188,49 @@ export class HubService {
     hub.documents = hub.documents.map((path) => BASE_URL.backend + path);
 
     return updatedHub;
+  }
+
+  // Update hub status by admin
+  async UpdateHubStatusByAdmin(hub_id: string, payload: UpdateHubByAdminDto) {
+    const hub = await this.dataSource
+      .getRepository(Hub)
+      .findOne({ where: { id: hub_id }, relations: ['user'] });
+
+    if (!hub) throw new BadRequestException('Hub Not Found');
+
+    hub.status = payload.status;
+    if (hub.status === HubStatus.ACTIVE) {
+      hub.is_verified = true;
+    }
+
+    const updatedHub = await this.dataSource.getRepository(Hub).save(hub);
+
+    // preparing for email
+    let email;
+    if (hub.status === 'ACTIVE') {
+      email = {
+        title: 'Hub Activated',
+        message: 'Your hub has been activated by admin.',
+      };
+    } else if (hub.status === 'CLOSED') {
+      email = {
+        title: 'Hub Closed',
+        message: 'Your hub has been closed by admin.',
+      };
+    } else {
+      email = {
+        name: updatedHub.user.full_name,
+        title: 'Hub Status Changed',
+        message: `Your hub status has been changed to ${hub.status} by admin.`,
+      };
+    }
+
+    sendMail({
+      to: updatedHub.user.email,
+      subject: 'Hub Status Changed',
+      html: defaultMailTemplate(email),
+    });
+    return true;
   }
 
   //   For reviewing the hub

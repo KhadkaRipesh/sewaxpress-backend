@@ -179,4 +179,20 @@ export class BookController {
   ) {
     return this.bookService.createBooking(customer_id, payload);
   }
+
+  // Payment
+  @Post('payment/:book_id')
+  @ResponseMessage(SuccessMessage.CREATE, 'Payment')
+  @ApiOperation({
+    summary: 'Make Payment',
+    description: `${UserRole.CUSTOMER}`,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CUSTOMER)
+  makePayment(
+    @GetUser('id') customer_id: string,
+    @Param('book_id') book_id: string,
+  ) {
+    return this.bookService.makePayment(customer_id, book_id);
+  }
 }

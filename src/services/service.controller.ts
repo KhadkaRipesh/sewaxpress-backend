@@ -76,11 +76,8 @@ export class ServiceController {
   })
   @ApiBearerAuth('JWT-auth')
   @Roles(UserRole.SERVICE_PROVIDER)
-  getMyService(
-    @GetUser('id') user_id: string,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.serviceService.getMyService(user_id, pagination);
+  getMyService(@GetUser('id') user_id: string) {
+    return this.serviceService.getMyService(user_id);
   }
 
   @Patch('/:service_id')

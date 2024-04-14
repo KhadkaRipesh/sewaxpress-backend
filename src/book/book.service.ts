@@ -211,6 +211,7 @@ export class BookService {
       .where('hub.user_id =:service_provider_id', { service_provider_id })
       .leftJoinAndSelect('book.customer', 'customer')
       .leftJoinAndSelect('book.booked_services', 'booked_services')
+      .leftJoinAndSelect('booked_services.service', 'services')
       .orderBy('book.booking_date', 'DESC');
 
     if (query) {

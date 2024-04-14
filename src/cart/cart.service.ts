@@ -24,7 +24,6 @@ export class CartService {
         'cart.id',
         'cart.customer_id',
         'cart.payment_status',
-        'cart.payment_id',
         'hub.id',
         'hub.name',
         'cart_services.id',

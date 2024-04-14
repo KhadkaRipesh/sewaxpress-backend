@@ -198,9 +198,21 @@ export class HubService {
 
     if (!hub) throw new BadRequestException('Hub Not Found');
 
+    // const serviceProvider
     hub.status = payload.status;
     if (hub.status === HubStatus.ACTIVE) {
       hub.is_verified = true;
+
+      // if hub ststus is active, also verify the user
+      const serviceProvider = await this.dataSource
+        .getRepository(User)
+        .findOne({ where: { id: hub.user.id } });
+      hub.status = payload.status;
+      if (hub.status === HubStatus.ACTIVE) {
+        hub.is_verified = true;
+      }
+      serviceProvider.is_verified = true;
+      await this.dataSource.getRepository(User).save(serviceProvider);
     }
 
     const updatedHub = await this.dataSource.getRepository(Hub).save(hub);
@@ -210,7 +222,8 @@ export class HubService {
     if (hub.status === 'ACTIVE') {
       email = {
         title: 'Hub Activated',
-        message: 'Your hub has been activated by admin.',
+        message:
+          'Your hub has been activated by admin. Now you can go further logging on system',
       };
     } else if (hub.status === 'CLOSED') {
       email = {

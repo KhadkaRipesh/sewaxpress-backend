@@ -15,7 +15,10 @@ import { Book } from './entities/book.entity';
 import { CartService as CartItems } from 'src/cart/entities/cart-service.entity';
 import { BookedService } from './entities/booked-entity';
 import { sendMail } from 'src/@helpers/mail';
-import { bookingMailTemplate } from 'src/@utils/mail-template';
+import {
+  bookingMailTemplate,
+  defaultMailTemplate,
+} from 'src/@utils/mail-template';
 import { applyDateFilter } from 'src/@filter/dateFilter';
 import { Hub } from 'src/hub/entities/hub.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
@@ -26,6 +29,7 @@ import {
 import axios from 'axios';
 import { error } from 'console';
 import { KHALTI_SECRET } from 'src/@config/constants.config';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class BookService {
@@ -455,9 +459,10 @@ export class BookService {
     book_id: string,
     payload: CancelBooking,
   ) {
-    const book = await this.dataSource
-      .getRepository(Book)
-      .findOne({ where: { id: book_id, customer_id } });
+    const book = await this.dataSource.getRepository(Book).findOne({
+      where: { id: book_id, customer_id },
+      relations: ['hub', 'customer'],
+    });
     if (!book) throw new BadRequestException('Unable to cancel.');
 
     const bookStatus = book.book_status;
@@ -474,8 +479,43 @@ export class BookService {
         ? payload.cancelled_reason
         : null,
     });
+    const serviceProvider = await this.dataSource
+      .getRepository(User)
+      .findOne({ where: { id: book.hub.user_id } });
 
-    // create notification for service provider
+    const notification = [
+      // for customer
+      {
+        title: 'Booking Canceled.',
+        body: 'You have canceled service booking from ' + book.hub.name,
+        user_id: book.customer.id,
+        notification_type: NotificationType.BOOK,
+      },
+      // for service provider
+      {
+        title: 'Book requested.',
+        body:
+          'Booked service of you hub has been canceled by' +
+          book.customer.full_name,
+        user_id: serviceProvider.id,
+        notification_type: NotificationType.BOOK,
+      },
+    ];
+
+    await this.dataSource.getRepository(Notification).save(notification);
+    const email = {
+      name: serviceProvider.full_name,
+      title: 'Booking Canceled',
+      message:
+        'Booked service of your hub has been canceld by' +
+        book.customer.full_name,
+    };
+    // send email to service provider
+    sendMail({
+      to: serviceProvider.email,
+      subject: 'Booking Canceled',
+      html: defaultMailTemplate(email),
+    });
 
     return true;
   }

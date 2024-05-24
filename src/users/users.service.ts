@@ -4,7 +4,6 @@ import { DataSource } from 'typeorm';
 import { paginateResponse } from 'src/@helpers/pagination';
 import { UpdateUserDTO, UserFilterDTO } from './dto/user.dto';
 import { User } from './entities/user.entity';
-import * as fs from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -31,31 +30,17 @@ export class UsersService {
   }
 
   // Update user profile
-  async updateCurrentUser(
-    user: User,
-    payload: UpdateUserDTO,
-    file?: Express.Multer.File,
-  ) {
+  async updateCurrentUser(user: User, payload: UpdateUserDTO) {
     const existing_user = await this.dataSource
       .getRepository(User)
       .findOne({ where: { id: user.id } });
 
-    if (payload.avatar) {
-      payload.avatar = null;
-    }
-
-    if (file) {
-      payload.avatar = '/' + file.path;
-      if (user.avatar) {
-        const path = user.avatar.slice(1);
-        if (fs.existsSync(path)) fs.unlinkSync(path);
-      }
-    }
-
     existing_user.address = payload.address;
-    existing_user.avatar = payload.avatar;
     existing_user.full_name = payload.full_name;
     existing_user.phone_number = payload.phone_number;
+    if (payload.avatar) {
+      existing_user.avatar = payload.avatar;
+    }
 
     const updatedUser = await this.dataSource
       .getRepository(User)

@@ -88,6 +88,7 @@ export class ServiceService {
         'hub.name',
         'hub.address',
         'category.category_name',
+        'category.id',
       ])
       .getMany();
 

@@ -67,6 +67,11 @@ export class UsersController {
     @Body() payload: UpdateUserDTO,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.userService.updateCurrentUser(user, payload, file);
+    if (file) {
+      payload.avatar = '/' + file.path;
+    } else {
+      payload.avatar = null;
+    }
+    return this.userService.updateCurrentUser(user, payload);
   }
 }

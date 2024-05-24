@@ -331,9 +331,10 @@ export class BookService {
     if (!hub) throw new BadRequestException('Hub not found.');
 
     // find booking from book id and hub id
-    const book = await this.dataSource
-      .getRepository(Book)
-      .findOne({ where: { id: book_id, hub_id: hub.id } });
+    const book = await this.dataSource.getRepository(Book).findOne({
+      where: { id: book_id, hub_id: hub.id },
+      relations: ['customer'],
+    });
     if (!book) throw new BadRequestException('There is no book for your hub.');
 
     // Update the book status in the database
@@ -346,6 +347,27 @@ export class BookService {
     });
 
     // prepare for notification to notify customer
+    let email;
+    if (updatedBook.book_status === 'BOOKING_CANCELLED') {
+      email = {
+        name: book.customer.full_name,
+        title: 'Booking Cancelled',
+        message: 'Your booking has been cancelled by service provider.',
+      };
+    } else if (updatedBook.book_status === 'READYFORSERVICE') {
+      email = {
+        name: book.customer.full_name,
+        title: 'Booking Ready for Service',
+        message:
+          'Your booking has been accepted by service provider. They will contact you soon.',
+      };
+    }
+
+    sendMail({
+      to: book.customer.email,
+      subject: 'Booking Update',
+      html: defaultMailTemplate(email),
+    });
 
     return `Booking ${updatedBook.book_status}`;
   }

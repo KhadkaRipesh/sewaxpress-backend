@@ -42,6 +42,9 @@ export class CategoryService {
   async updateCategoryDetails(category_id: string, payload: UpdateCategoryDTO) {
     const category = await this.getServiceCategoryDetails(category_id);
     category.category_name = payload.category_name;
+    if (payload.image) {
+      category.image = payload.image;
+    }
     return await this.dataSource.getRepository(Category).save(category);
   }
 

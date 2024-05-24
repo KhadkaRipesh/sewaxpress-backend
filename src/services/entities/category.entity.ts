@@ -9,6 +9,9 @@ export class Category {
   @Column()
   category_name: string;
 
+  @Column({ nullable: true })
+  image: string;
+
   @OneToMany(() => Service, (serviceList) => serviceList.category, {
     cascade: true,
   })

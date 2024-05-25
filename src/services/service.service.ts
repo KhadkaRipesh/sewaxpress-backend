@@ -46,6 +46,7 @@ export class ServiceService {
       .createQueryBuilder('service')
       .leftJoin('service.hub', 'hub')
       .leftJoin('service.category', 'category')
+      .leftJoinAndSelect('hub.hub_reviews', 'hub_reviews')
       .where('hub.address = :location', { location })
       .andWhere('category.id =:category', { category })
       .select([
@@ -59,11 +60,21 @@ export class ServiceService {
         'hub.id',
         'hub.name',
         'hub.address',
+        'hub_reviews.rating',
+        'hub_reviews.comment',
         'category.category_name',
-      ]);
+      ])
+      .addSelect(
+        `(SELECT AVG(rating) as rating FROM hub_review WHERE "hub_id"= hub.id)`,
+        `avg_rating`,
+      )
+      .addSelect(
+        `(SELECT COUNT(rating) as rating FROM hub_review WHERE "hub_id"= hub.id)`,
+        `rating_count`,
+      );
 
     //   can add review of the service or hub too
-    const rawData = await query.getMany();
+    const rawData = await query.getRawMany();
 
     return rawData;
   }
@@ -263,5 +274,21 @@ export class ServiceService {
     if (!isValidUser) throw new BadRequestException('No such Service on Trash');
 
     return await this.dataSource.getRepository(Service).delete(service_id);
+  }
+
+  //get new services of specific location
+  async getNewService(location: string) {
+    const query = this.dataSource
+      .getRepository(Service)
+      .createQueryBuilder('service')
+      .leftJoin('service.hub', 'hub')
+      .where('hub.address = :location', { location })
+      .select(['service.id', 'service.name', 'service.price', 'service.image'])
+      .orderBy('service.created_at', 'DESC') // Order by createdAt in descending order
+      .limit(3); // Limit the result to 3 services
+
+    const rawData = await query.getMany();
+
+    return rawData;
   }
 }

@@ -294,6 +294,7 @@ export class BookService {
         'book.paid_to_serviceProvider',
         'book.hasCustomerPaid',
         'hub.name',
+        'hub.id',
         'hub.address',
         'hub.avatar',
         'service.id',

@@ -34,4 +34,5 @@ export enum SuccessMessage {
   CANCEL = '%s cancelled successfully.',
   CHANGE = '%s changed successfully.',
   REQUEST = '%s requested successfully.',
+  REVIEW = '%s rated successfully.',
 }

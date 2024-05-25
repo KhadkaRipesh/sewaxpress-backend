@@ -150,7 +150,7 @@ export class HubController {
   //   Review for Hub
   @Post('review/:hub_id')
   @ApiOperation({ summary: 'Review a Hub' })
-  @ResponseMessage(SuccessMessage.CREATE, 'hub review')
+  @ResponseMessage(SuccessMessage.REVIEW, 'Hub')
   @ApiOperation({
     summary: 'Review a Shop',
     description: `${UserRole.CUSTOMER}`,
@@ -171,7 +171,7 @@ export class HubController {
   @ApiOperation({ summary: 'Get Reviews of Hub' })
   @ResponseMessage(SuccessMessage.FETCH, 'hub review')
   getReviewByHubId(
-    @Param('shop_id', ParseUUIDPipe) hub_id: string,
+    @Param('hub_id', ParseUUIDPipe) hub_id: string,
     @Query() query: PaginationDto,
   ) {
     return this.hubService.getReviewByHubId(hub_id, query);

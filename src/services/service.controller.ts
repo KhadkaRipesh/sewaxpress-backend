@@ -128,6 +128,16 @@ export class ServiceController {
     return this.serviceService.getAllDeletedServices(user_id, query);
   }
 
+  //-------------------Get new Services
+  @Get('/new-service/:location')
+  @ResponseMessage(SuccessMessage.FETCH, 'Services')
+  @ApiOperation({
+    summary: 'Get Service',
+  })
+  getNewService(@Param('location') location: string) {
+    return this.serviceService.getNewService(location);
+  }
+
   // ------------Get Service By Id
   @Get('/:service_id')
   @ResponseMessage(SuccessMessage.FETCH, 'Service')

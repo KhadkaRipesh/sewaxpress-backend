@@ -17,7 +17,7 @@ export class AppService {
     };
   }
 
-  // Get Dashboard Data
+  // Get Dashboard Data for ADMIN
   async getDashbaoardData() {
     const userRepository = this.dataSource.getRepository(User);
     const hubRepository = this.dataSource.getRepository(Hub);

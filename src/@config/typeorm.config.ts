@@ -9,6 +9,6 @@ export const TypeormConfig: TypeOrmModuleOptions = {
   password: DATABASE.password,
   database: DATABASE.database,
   autoLoadEntities: true,
-  entities: [__dirname + '/../**/*.entity{.ts,.js'],
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: true,
 };

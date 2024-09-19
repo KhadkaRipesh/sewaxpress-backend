@@ -13,7 +13,7 @@ import { CartService } from 'src/cart/cart.service';
 import { generateOTP } from 'src/@helpers/otp';
 import { Book } from './entities/book.entity';
 import { CartService as CartItems } from 'src/cart/entities/cart-service.entity';
-import { BookedService } from './entities/booked-entity';
+import { BookedService } from './entities/booked.entity';
 import { sendMail } from 'src/@helpers/mail';
 import {
   bookingMailTemplate,

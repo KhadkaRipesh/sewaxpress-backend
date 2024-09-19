@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { User, UserRole } from './users/entities/user.entity';
 import { Hub } from './hub/entities/hub.entity';
-import { BookedService } from './book/entities/booked-entity';
+import { BookedService } from './book/entities/booked.entity';
 import { Category } from './services/entities/category.entity';
 
 @Injectable()

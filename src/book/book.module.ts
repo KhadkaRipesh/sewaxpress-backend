@@ -4,7 +4,7 @@ import { BookService } from './book.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
 import { CartService } from 'src/cart/cart.service';
-import { BookedService } from './entities/booked-entity';
+import { BookedService } from './entities/booked.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Module({
